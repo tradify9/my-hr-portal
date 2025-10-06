@@ -14,6 +14,12 @@ import AdminTaskPage from './pages/AdminTaskPage';
 import EmployeeTaskPage from './pages/EmployeeTaskPage';
 import EmployeeForm from './pages/EmployeeForm';
 import AdminMessages from './pages/AdminMessages';
+import AttendanceLeaveDashboard from './pages/AttendanceLeaveDashboard';
+import AboutPage from './pages/AboutPage';
+import ContactUs from './pages/ContactUs';
+import HRPortalFeatures from './pages/HRPortalFeatures';
+import EmployeeAttendanceLeaveDashboard from './pages/EmployeeAttendanceLeaveDashboard';
+
 
 function App() {
   const [role, setRole] = useState(null);
@@ -104,11 +110,17 @@ function App() {
         <Route path="/employee/task" element={<EmployeeTaskPage />} />
         <Route path="/employee/form" element={<EmployeeForm />} />
         <Route path="/admin/messages" element={<AdminMessages />} />
+        <Route path="/attendance/leave" element={<AttendanceLeaveDashboard />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contect" element={<ContactUs />} />
+        <Route path="/hr/fea" element={<HRPortalFeatures />} />
+        <Route path="/employee/gui" element={<EmployeeAttendanceLeaveDashboard />} />
+        
 
 
 
 
-      </Routes>
+      </Routes> 
     </Router>
   );
 }

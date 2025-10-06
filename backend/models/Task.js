@@ -14,7 +14,6 @@ const taskSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: true, // ensure always assigned to at least one employee
       },
     ],
 
@@ -32,7 +31,7 @@ const taskSchema = new mongoose.Schema(
       default: "",
     },
 
-    // 🔹 Priority (default = Medium)
+    // 🔹 Priority
     priority: {
       type: String,
       enum: ["Low", "Medium", "High"],
@@ -42,21 +41,23 @@ const taskSchema = new mongoose.Schema(
     // 🔹 Task due date
     dueDate: {
       type: Date,
+      default: null,
     },
 
     // 🔹 Current status
     status: {
       type: String,
       enum: ["Pending", "In Progress", "Completed"],
-      default: "Pending",
+      default: "Pending", // ✅ Always default Pending
+      required: true,     // ✅ ensure status is never missing
     },
   },
   {
-    timestamps: true, // createdAt, updatedAt automatically add hoga
+    timestamps: true, // createdAt, updatedAt
   }
 );
 
-// ✅ Indexing for faster queries (admin + employee wise)
+// ✅ Indexes for faster queries
 taskSchema.index({ adminId: 1 });
 taskSchema.index({ assignedTo: 1 });
 

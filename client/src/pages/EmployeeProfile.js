@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "./EmployeeProfile.css";
 
 const EmployeeProfile = () => {
   const token = localStorage.getItem("token");
@@ -33,7 +34,7 @@ const EmployeeProfile = () => {
   // ✅ Safe image URL builder
   const getImageUrl = (imgPath) => {
     if (!imgPath) return null;
-    const base = API_URL.replace(/\/$/, ""); // remove trailing slash
+    const base = API_URL.replace(/\/$/, "");
     const cleanPath = imgPath.startsWith("/") ? imgPath : `/${imgPath}`;
     return `${base}${cleanPath}`;
   };
@@ -41,56 +42,42 @@ const EmployeeProfile = () => {
   const safeName = profile.name || "Employee";
 
   return (
-    <div className="container my-5">
-      <div className="card border-0 shadow-lg rounded-4 overflow-hidden">
-        {/* Header Banner */}
-        <div
-          className="p-5 text-white text-center"
-          style={{
-            background: "linear-gradient(135deg, #004e92, #000428)",
-          }}
-        >
-          <h2 className="fw-bold mb-1">Employee Profile</h2>
-          <p className="mb-0 text-white-50">Your personal and professional details</p>
+    <div className="container my-5 employee-profile">
+      <div className="card shadow-lg border-0 rounded-4 overflow-hidden">
+        {/* Banner */}
+        <div className="profile-banner text-white p-4">
+          <h2 className="fw-bold mb-0">Employee Profile</h2>
+          <p className="mb-0 text-white-50">Personal & Professional Details</p>
         </div>
 
-        {/* Profile Section */}
-        <div className="card-body p-5">
-          <div className="row g-5 align-items-center">
-            {/* Left: Profile Image */}
+        {/* Main Row */}
+        <div className="card-body p-4">
+          <div className="row g-4 align-items-center">
+            {/* Left Column: Profile Image */}
             <div className="col-md-4 text-center">
               {profile.image ? (
                 <img
                   src={getImageUrl(profile.image)}
                   alt={`${safeName}'s Profile`}
-                  className="rounded-circle shadow"
-                  style={{
-                    width: "180px",
-                    height: "180px",
-                    objectFit: "cover",
-                    border: "6px solid #fff",
-                  }}
+                  className="rounded-circle profile-img shadow"
                   onError={(e) => {
                     e.target.onerror = null;
                     e.target.src = "/default-avatar.png";
                   }}
                 />
               ) : (
-                <div
-                  className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow"
-                  style={{ width: "180px", height: "180px", fontSize: "3.5rem" }}
-                >
+                <div className="avatar-placeholder shadow">
                   {safeName.charAt(0).toUpperCase()}
                 </div>
               )}
               <h4 className="mt-3 fw-bold">{safeName}</h4>
-              <p className="text-muted mb-1">{profile.position || "—"}</p>
+              <p className="text-muted">{profile.position || "—"}</p>
               <span className="badge bg-success px-3 py-2">Active</span>
             </div>
 
-            {/* Right: Info Section */}
+            {/* Right Column: Profile Info */}
             <div className="col-md-8">
-              <div className="row g-4">
+              <div className="row g-3">
                 <div className="col-sm-6">
                   <small className="text-muted">Employee ID</small>
                   <h6 className="fw-semibold">{profile.employeeId || "—"}</h6>
@@ -123,7 +110,7 @@ const EmployeeProfile = () => {
         </div>
 
         {/* Footer */}
-        <div className="card-footer bg-light text-center py-3">
+        <div className="card-footer bg-light text-center py-2">
           <small className="text-muted">Last updated just now</small>
         </div>
       </div>

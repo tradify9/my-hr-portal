@@ -1,0 +1,120 @@
+/* ========= Layout ========= */
+.superadmin-dashboard {
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
+  background: #f8f9fa;
+}
+
+/* ========= Sidebar ========= */
+.superadmin-sidebar {
+  background: #1e1e2f;
+  color: #fff;
+  height: 100vh;
+  padding: 20px 15px;
+  position: sticky;
+  top: 0;
+  left: 0;
+}
+
+.superadmin-sidebar h4 {
+  font-weight: 600;
+  margin-bottom: 30px;
+  text-align: center;
+  color: #fff;
+}
+
+.superadmin-sidebar .btn {
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.superadmin-sidebar .btn-dark {
+  background: transparent;
+  color: #ccc;
+  text-align: left;
+}
+
+.superadmin-sidebar .btn-dark:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.superadmin-sidebar .btn-secondary {
+  background: #0d6efd;
+  color: #fff;
+}
+
+.superadmin-sidebar hr {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.superadmin-sidebar .btn-outline-danger {
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+
+/* ========= Main Content ========= */
+.superadmin-content {
+  padding: 30px;
+}
+
+.superadmin-content h2 {
+  font-weight: 700;
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+  color: #0d6efd;
+}
+
+.superadmin-content p {
+  color: #555;
+}
+
+/* ========= List Groups ========= */
+.superadmin-content .list-group-item {
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.superadmin-content .list-group-item strong {
+  font-weight: 600;
+  color: #333;
+}
+
+/* ========= Forms ========= */
+.superadmin-content form {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.superadmin-content form h4 {
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.superadmin-content .form-control {
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.superadmin-content .btn-primary,
+.superadmin-content .btn-success {
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 8px 16px;
+}
+
+.superadmin-content .btn-warning {
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.superadmin-content .btn-danger {
+  border-radius: 8px;
+  font-size: 0.85rem;
+}

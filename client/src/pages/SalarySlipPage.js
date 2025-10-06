@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import "./SalarySlipPage.css";
+
 
 export default function SalarySlipPage() {
   const [search, setSearch] = useState("");
@@ -172,7 +174,7 @@ export default function SalarySlipPage() {
 
   return (
     <div className="container mt-5">
-      <h2 className="mb-4 text-primary">🧾 Admin Salary Slip Generator</h2>
+      <h2 className="mb-4 text-primary">Admin Salary Slip Generator</h2>
 
       {/* 🔍 Search Section */}
       <div className="card p-3 shadow-sm mb-4">
@@ -188,7 +190,7 @@ export default function SalarySlipPage() {
           </div>
           <div className="col-md-4 d-grid">
             <button className="btn btn-outline-primary" onClick={handleSearch}>
-              🔍 Search Employee
+              Search Employee
             </button>
           </div>
         </div>
@@ -302,10 +304,10 @@ export default function SalarySlipPage() {
           {/* Download Buttons */}
           <div className="mt-3 d-flex gap-2">
             <button className="btn btn-success" onClick={downloadCSV}>
-              ⬇️ Download CSV
+              Download CSV
             </button>
             <button className="btn btn-danger" onClick={downloadPDF}>
-              ⬇️ Download PDF
+              Download PDF
             </button>
           </div>
         </div>

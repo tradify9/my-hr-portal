@@ -1,0 +1,40 @@
+/* Banner */
+.profile-banner {
+  background: linear-gradient(135deg, #98bce9, #162d5c);
+  border-bottom: 3px solid #e94560;
+}
+
+/* Profile Image */
+.profile-img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border: 5px solid #fff;
+  margin-bottom: 10px;
+}
+
+/* Avatar Placeholder */
+.avatar-placeholder {
+  width: 150px;
+  height: 150px;
+  font-size: 3rem;
+  font-weight: bold;
+  
+  background: #e94560;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+}
+
+/* Info Section */
+.employee-profile h6 {
+  color: #0f3460;
+  margin: 0;
+}
+
+.employee-profile small {
+  font-size: 0.8rem;
+  color: #666;
+}

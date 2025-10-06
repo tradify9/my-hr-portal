@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "./AdminTaskPage.css";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -15,7 +16,7 @@ export default function AdminTaskPage() {
 
   const token = localStorage.getItem("token");
 
-  // ✅ Fetch all tasks created by admin
+  // ✅ Fetch tasks
   const fetchTasks = async () => {
     try {
       const res = await axios.get(`${API_URL}/api/tasks/admin-tasks`, {
@@ -37,7 +38,7 @@ export default function AdminTaskPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data?.success) {
-        alert("✅ Task Created & Assigned to Employees");
+        alert("✅ Task Created & Assigned");
         setForm({ title: "", description: "", priority: "Medium", dueDate: "" });
         fetchTasks();
       }
@@ -56,7 +57,7 @@ export default function AdminTaskPage() {
 
   return (
     <div className="container mt-4">
-      <h2 className="text-primary mb-4">🧑‍💼 Admin Task Management</h2>
+      <h2 className="text-primary mb-4"> Admin Task Management</h2>
 
       {/* ✅ Create Task Form */}
       <div className="card p-3 mb-4 shadow-sm">
@@ -118,7 +119,7 @@ export default function AdminTaskPage() {
 
       {/* ✅ Task List */}
       <div className="card p-3 shadow-sm">
-        <h5 className="mb-3">📋 Tasks Assigned</h5>
+        <h5 className="mb-3">Tasks Assigned</h5>
         {tasks.length > 0 ? (
           <table className="table table-bordered table-striped">
             <thead className="table-light">
@@ -136,13 +137,32 @@ export default function AdminTaskPage() {
                 <tr key={t._id}>
                   <td>{t.title}</td>
                   <td>{t.description || "—"}</td>
-                  <td>{t.priority}</td>
+                  <td>
+                    <span
+                      className={
+                        t.priority === "Low"
+                          ? "priority-low"
+                          : t.priority === "High"
+                            ? "priority-high"
+                            : "priority-medium"
+                      }
+                    >
+                      {t.priority}
+                    </span>
+                  </td>
                   <td>
                     {t.dueDate
                       ? new Date(t.dueDate).toLocaleDateString()
                       : "—"}
                   </td>
-                  <td>{t.status}</td>
+                  <td>
+                    <span
+                      className={`status-badge ${(t.status || "Pending").toLowerCase().replace(/\s+/g, "-")
+                        }`}
+                    >
+                      {t.status || "Pending"}
+                    </span>
+                  </td>
                   <td>
                     {(t.assignedTo || []).map((emp) => (
                       <div key={emp._id}>

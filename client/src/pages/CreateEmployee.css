@@ -1,0 +1,78 @@
+/* Page Container */
+.container {
+  font-family: "Poppins", sans-serif;
+  max-width: 900px;
+}
+
+/* Page Title */
+.container h3 {
+  font-weight: 600;
+  color: #0f3460;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+/* Form Card */
+form {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* Inputs & Selects */
+.form-control {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  transition: 0.3s;
+}
+
+.form-control:focus {
+  border-color: #0f3460;
+  box-shadow: 0 0 6px rgba(15, 52, 96, 0.3);
+}
+
+/* Labels & Helper text */
+form label {
+  font-weight: 500;
+  color: #333;
+}
+
+small.text-muted {
+  font-size: 0.8rem;
+  margin-top: 2px;
+  display: block;
+}
+
+/* File Input */
+input[type="file"].form-control {
+  padding: 6px;
+  cursor: pointer;
+}
+
+/* Button */
+.btn-primary {
+  background: #0f3460;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 12px;
+  transition: all 0.3s;
+  font-size: 1rem;
+}
+
+.btn-primary:hover {
+  background: #162d5c;
+  transform: translateY(-2px);
+}
+
+/* Row spacing */
+.row.g-3 {
+  margin-bottom: 5px;
+}
+
+.row.mt-4 {
+  margin-top: 25px !important;
+}

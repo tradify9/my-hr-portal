@@ -1,0 +1,95 @@
+/* ========== Container ========== */
+.punch-container {
+  font-family: "Poppins", sans-serif;
+}
+
+/* ========== Buttons ========== */
+.button-group .btn {
+  font-weight: 500;
+  border-radius: 10px;
+  padding: 8px 18px;
+  transition: all 0.2s ease-in-out;
+}
+
+.button-group .btn-success:hover {
+  background-color: #198754;
+  box-shadow: 0 4px 10px rgba(25, 135, 84, 0.4);
+  transform: translateY(-2px);
+}
+
+.button-group .btn-danger:hover {
+  background-color: #dc3545;
+  box-shadow: 0 4px 10px rgba(220, 53, 69, 0.4);
+  transform: translateY(-2px);
+}
+
+/* ========== Calendar Card ========== */
+.calendar-card {
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 15px;
+}
+
+/* React Calendar */
+.react-calendar {
+  border: none;
+  width: 100%;
+}
+
+.react-calendar__tile {
+  height: 65px;
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.react-calendar__tile:hover {
+  background: #f1f3f5;
+  transform: scale(1.05);
+}
+
+.react-calendar__tile--now {
+  background: #e7f1ff !important;
+  border: 2px solid #0d6efd !important;
+  border-radius: 10px;
+  font-weight: 600;
+  color: #0d6efd !important;
+}
+
+/* ✅ Present Day */
+.present-day {
+  background: #d1e7dd !important;
+  color: #0f5132 !important;
+  font-weight: 600;
+  border: 1px solid #badbcc !important;
+  border-radius: 10px;
+}
+
+/* ❌ Absent Day */
+.absent-day {
+  background: #f8d7da !important;
+  color: #842029 !important;
+  font-weight: 600;
+  border: 1px solid #f5c2c7 !important;
+  border-radius: 10px;
+}
+
+
+
+.festival-icon {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.85rem;
+}
+
+/* ========== Legend ========== */
+.legend {
+  margin-top: 10px;
+}
+
+.legend .badge {
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 20px;
+}

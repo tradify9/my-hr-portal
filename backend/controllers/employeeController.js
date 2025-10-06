@@ -27,12 +27,21 @@ exports.punchIn = async (req, res) => {
       });
     }
 
-    const { location } = req.body; // ✅ frontend से location आएगा
+    // ✅ Fix: take lat/lng directly
+    const { latitude, longitude } = req.body;
+
+    if (!latitude || !longitude) {
+      return res.status(400).json({
+        success: false,
+        allowed: true,
+        msg: "Location required",
+      });
+    }
 
     const attendance = await Attendance.create({
       userId: req.user._id,
       punchIn: new Date(),
-      punchInLocation: location || null, // ✅ save location
+      punchInLocation: { latitude, longitude }, // ✅ save location properly
     });
 
     return res.status(201).json({
@@ -76,10 +85,19 @@ exports.punchOut = async (req, res) => {
       });
     }
 
-    const { location } = req.body; // ✅ frontend से location आएगा
+    // ✅ Fix: take lat/lng directly
+    const { latitude, longitude } = req.body;
+
+    if (!latitude || !longitude) {
+      return res.status(400).json({
+        success: false,
+        allowed: true,
+        msg: "Location required",
+      });
+    }
 
     attendance.punchOut = new Date();
-    attendance.punchOutLocation = location || null; // ✅ save location
+    attendance.punchOutLocation = { latitude, longitude }; // ✅ save location properly
     await attendance.save();
 
     return res.json({

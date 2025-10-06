@@ -1,0 +1,95 @@
+/* Container */
+.admin-messages-container {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Heading */
+.admin-messages-container h2 {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  color: #0f3460;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+/* Table */
+.admin-messages-table {
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.admin-messages-table thead {
+  background: #0f3460;
+  color: #fff;
+}
+
+.admin-messages-table th {
+  padding: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.admin-messages-table td {
+  padding: 12px;
+  font-size: 0.9rem;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.admin-messages-table tr:hover td {
+  background: #f4f6fb;
+}
+
+/* Form Select */
+.admin-messages-table select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.85rem;
+  transition: 0.3s;
+}
+
+.admin-messages-table select:focus {
+  border-color: #0f3460;
+  box-shadow: 0 0 4px rgba(15, 52, 96, 0.3);
+}
+
+/* Status Colors */
+.admin-messages-table td:nth-child(3) {
+  font-weight: 600;
+}
+
+.admin-messages-table td:contains("Pending") {
+  color: #f0ad4e;
+}
+
+.admin-messages-table td:contains("In Progress") {
+  color: #0275d8;
+}
+
+.admin-messages-table td:contains("Resolved") {
+  color: #5cb85c;
+}
+
+.admin-messages-table td:contains("Rejected") {
+  color: #d9534f;
+}
+
+/* Delete Button */
+.admin-messages-table button {
+  border-radius: 6px;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+.admin-messages-table button:hover {
+  transform: scale(1.05);
+}

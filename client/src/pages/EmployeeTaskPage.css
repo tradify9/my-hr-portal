@@ -1,0 +1,43 @@
+.employee-task-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.employee-task-page h2 {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+}
+
+.employee-task-page .card {
+  /* border-radius: 12px; */
+  overflow: hidden;
+}
+
+.employee-task-page table {
+  width: 100%;
+  font-size: 0.95rem;
+}
+
+.employee-task-page thead th {
+  white-space: nowrap;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: #0f3460; /* ✅ Light header background */
+  color: #fcfdfd; /* ✅ Dark text */
+}
+
+.employee-task-page tbody td {
+  vertical-align: middle;
+}
+
+.employee-task-page .badge {
+  font-size: 0.8rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.employee-task-page .form-select {
+  border-radius: 6px;
+  font-size: 0.85rem;
+}

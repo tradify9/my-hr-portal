@@ -1,0 +1,62 @@
+.employee-form h2 {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  color: #0f3460;
+}
+
+.card {
+  border-radius: 10px;
+  border: none;
+}
+
+/* Input & Textarea */
+.form-control {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  transition: 0.3s;
+}
+
+.form-control:focus {
+  border-color: #0f3460;
+  box-shadow: 0 0 5px rgba(15, 52, 96, 0.3);
+}
+
+/* Button */
+.btn-primary {
+  background: #0f3460;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 10px 20px;
+  transition: all 0.3s;
+}
+
+.btn-primary:hover {
+  background: #162d5c;
+  transform: translateY(-2px);
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.status-badge.pending {
+  background: #f0ad4e;
+}
+
+.status-badge.in-progress {
+  background: #0275d8;
+}
+
+.status-badge.resolved {
+  background: #5cb85c;
+}
+
+.status-badge.rejected {
+  background: #d9534f;
+}

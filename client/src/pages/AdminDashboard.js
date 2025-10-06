@@ -1,31 +1,51 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom"; // ✅ useNavigate import
+import "./AdminDashboard.css";
+
+// ✅ Import child components
+import CreateEmployee from "./CreateEmployee";
+import EmployeeAttendance from "./EmployeeAttendance";
+import SalarySlipPage from "./SalarySlipPage";
+import AdminTaskPage from "./AdminTaskPage";
+import AdminMessages from "./AdminMessages";
+import AttendanceLeaveDashboard from "./AttendanceLeaveDashboard";
+
+// ✅ Import Icons
+import {
+  FaUsers,
+  FaUserPlus,
+  FaCalendarCheck,
+  FaFileInvoiceDollar,
+  FaTasks,
+  FaEnvelope,
+  FaSignOutAlt,
+  FaClipboardList,
+  FaTachometerAlt
+} from "react-icons/fa";
 
 const AdminDashboard = () => {
   const [employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [leaves, setLeaves] = useState([]);
   const [profile, setProfile] = useState(null);
-  const [activeTab, setActiveTab] = useState("employees");
+  const [activeTab, setActiveTab] = useState("attendanceGif");
   const [loading, setLoading] = useState(false);
   const [loadingLeaves, setLoadingLeaves] = useState(false);
   const [search, setSearch] = useState("");
 
+  // ✅ For editing employee
+  const [editEmployee, setEditEmployee] = useState(null);
+
   const token = localStorage.getItem("token");
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-  const navigate = useNavigate(); // ✅ navigation hook
-
-  // ✅ Logout function
+  // ✅ Logout
   const handleLogout = () => {
-    localStorage.removeItem("role");
-    localStorage.removeItem("token");
-    localStorage.removeItem("adminId");
-    navigate("/"); // redirect to login
+    localStorage.clear();
+    window.location.href = "/";
   };
 
-  // ✅ Fetch Profile
+  // ✅ Profile
   const fetchProfile = async () => {
     try {
       const res = await axios.get(`${API_URL}/api/admin/profile`, {
@@ -33,28 +53,28 @@ const AdminDashboard = () => {
       });
       setProfile(res.data.admin);
     } catch (err) {
-      console.error("Fetch Profile error:", err.response?.data || err.message);
+      console.error("Profile error:", err);
     }
   };
 
-  // ✅ Fetch Employees
+  // ✅ Employees
   const fetchEmployees = async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${API_URL}/api/admin/employees`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const employeesData = res.data.employees || res.data;
-      setEmployees(employeesData);
-      setFilteredEmployees(employeesData);
+      const data = res.data.employees || res.data;
+      setEmployees(data);
+      setFilteredEmployees(data);
     } catch (err) {
-      console.error("❌ Fetch Employees error:", err.response?.data || err.message);
+      console.error("Employees error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Fetch Leaves
+  // ✅ Leaves
   const fetchLeaves = async () => {
     setLoadingLeaves(true);
     try {
@@ -63,7 +83,7 @@ const AdminDashboard = () => {
       });
       setLeaves(res.data.leaves || res.data);
     } catch (err) {
-      console.error("❌ Fetch Leaves error:", err.response?.data || err.message);
+      console.error("Leaves error:", err);
       setLeaves([]);
     } finally {
       setLoadingLeaves(false);
@@ -85,11 +105,11 @@ const AdminDashboard = () => {
       await axios.delete(`${API_URL}/api/admin/employees/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const updatedEmployees = employees.filter((e) => e._id !== id);
-      setEmployees(updatedEmployees);
-      setFilteredEmployees(updatedEmployees);
+      const updated = employees.filter((e) => e._id !== id);
+      setEmployees(updated);
+      setFilteredEmployees(updated);
     } catch (err) {
-      console.error("❌ Delete Employee error:", err.response?.data || err.message);
+      console.error("Delete error:", err);
     }
   };
 
@@ -103,15 +123,14 @@ const AdminDashboard = () => {
       );
       fetchLeaves();
     } catch (err) {
-      console.error("❌ Leave Action error:", err.response?.data || err.message);
+      console.error("Leave action error:", err);
     }
   };
 
-  // ✅ Search Function
+  // ✅ Search
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearch(value);
-
     const filtered = employees.filter(
       (emp) =>
         emp.name?.toLowerCase().includes(value) ||
@@ -120,141 +139,334 @@ const AdminDashboard = () => {
     setFilteredEmployees(filtered);
   };
 
-  return (
-    <div className="d-flex">
-      {/* Sidebar */}
-      <div
-        className="bg-dark text-white p-3"
-        style={{ minHeight: "100vh", width: "220px" }}
-      >
-        <h4>Admin Panel</h4>
-        <p className="mt-2">👤 {profile?.username || "Admin"}</p>
-        <p className="mb-4">🏢 {profile?.company || "No Company"}</p>
+  // ✅ Save Edited Employee
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData();
 
-        <ul className="nav flex-column mt-4">
+      formData.append("employeeId", editEmployee.employeeId || "");
+      formData.append("name", editEmployee.name || "");
+      formData.append("email", editEmployee.email || "");
+      formData.append("position", editEmployee.position || "");
+      formData.append("salary", editEmployee.salary || "");
+      formData.append("department", editEmployee.department || "");
+      formData.append("joinDate", editEmployee.joinDate || "");
+
+      await axios.put(
+        `${API_URL}/api/admin/employees/${editEmployee._id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      alert("✅ Employee updated successfully!");
+      setEditEmployee(null);
+      fetchEmployees();
+    } catch (err) {
+      console.error("Update error:", err);
+      alert("❌ Failed to update employee");
+    }
+  };
+
+
+
+
+  return (
+
+    <div className="dashboard-container">
+      {/* Sidebar */}
+      <div className="sidebar">
+        <h4 className="sidebar-title"> Admin Panel</h4>
+        <p className="profile-info"> {profile?.username || "Admin"}</p>
+        <p className="profile-info"> {profile?.company || "No Company"}</p>
+
+        <ul className="nav-links">
+
           <li
-            className={`nav-item mb-2 ${activeTab === "employees" ? "fw-bold" : ""}`}
-            style={{ cursor: "pointer" }}
-            onClick={() => setActiveTab("employees")}
+            className={`nav-item ${activeTab === "attendanceGif" ? "active" : ""}`}
+            onClick={() => setActiveTab("attendanceGif")}
           >
-            👥 Employees
-          </li>
-          <li className="nav-item mb-2">
-            <Link
-              to="/admin/create-employee"
-              className="text-white text-decoration-none"
-            >
-              ➕ Add Employee
-            </Link>
-          </li>
-          <li className="nav-item mb-2">
-            <Link
-              to="/admin/attendance"
-              className="text-white text-decoration-none"
-            >
-              📍 Employee Attendance
-            </Link>
+            <FaTachometerAlt className="me-2" /> Dashboard
           </li>
           <li
-            className={`nav-item mb-2 ${activeTab === "leaves" ? "fw-bold" : ""}`}
-            style={{ cursor: "pointer" }}
+            className={activeTab === "employees" ? "active" : ""}
+            onClick={() => {
+              setActiveTab("employees");
+              setEditEmployee(null);
+            }}
+          >
+            <FaUsers className="me-2" /> Employees
+          </li>
+          <li
+            className={activeTab === "create-employee" ? "active" : ""}
+            onClick={() => setActiveTab("create-employee")}
+          >
+            <FaUserPlus className="me-2" /> Add Employee
+          </li>
+          <li
+            className={activeTab === "attendance" ? "active" : ""}
+            onClick={() => setActiveTab("attendance")}
+          >
+            <FaCalendarCheck className="me-2" /> Emp Attendance
+          </li>
+          <li
+            className={activeTab === "leaves" ? "active" : ""}
             onClick={() => setActiveTab("leaves")}
           >
-            📝 Leave Approvals
+            <FaClipboardList className="me-2" /> Leave Approvals
+          </li>
+          <li
+            className={activeTab === "salary-slip" ? "active" : ""}
+            onClick={() => setActiveTab("salary-slip")}
+          >
+            <FaFileInvoiceDollar className="me-2" /> Salary Slip
+          </li>
+          <li
+            className={activeTab === "tasks" ? "active" : ""}
+            onClick={() => setActiveTab("tasks")}
+          >
+            <FaTasks className="me-2" /> Manage Tasks
+          </li>
+          <li
+            className={activeTab === "messages" ? "active" : ""}
+            onClick={() => setActiveTab("messages")}
+          >
+            <FaEnvelope className="me-2" /> Admin Messages
           </li>
 
-          <Link to="/salary/slipe" className="list-group-item list-group-item-action">
-            💰 Salary Slip
-          </Link>
-
-          <li className="nav-item mb-2">
-            <Link to="/admin/task" className="nav-link text-white">
-              📝 Manage Tasks
-            </Link>
-          </li>
-          <li className="nav-item mb-2">
-            <Link to="/admin/messages" className="nav-link text-white">
-              Admin Page
-            </Link>
-          </li>
-
-          {/* 🚪 Logout */}
-          <li className="nav-item mt-3">
-            <button
-              className="btn btn-danger w-100 fw-bold"
-              onClick={handleLogout}
-            >
-              🚪 Logout
-            </button>
-          </li>
         </ul>
+
+        <button className="logout-btn" onClick={handleLogout}>
+          <FaSignOutAlt className="me-2" /> Logout
+        </button>
       </div>
 
       {/* Main Content */}
-      <div className="flex-grow-1 p-4">
-        <h2>Welcome, {profile?.username || "Admin"} 👋</h2>
+      <div className="main-content">
+        <h2>Welcome, {profile?.username || "Admin"} </h2>
         <h5>Company: {profile?.company || "Not Assigned"}</h5>
 
         {/* Employees List */}
-        {activeTab === "employees" && (
+        {activeTab === "employees" && !editEmployee && (
           <>
-            <h4>Employees</h4>
-            <input
-              type="text"
-              className="form-control mb-3"
-              placeholder="Search by name or email..."
-              value={search}
-              onChange={handleSearch}
-            />
+            <div className="section-header">
+              <h4>Employees</h4>
+              <input
+                type="text"
+                placeholder="🔍 Search by name or email..."
+                value={search}
+                onChange={handleSearch}
+              />
+            </div>
             {loading ? (
               <p>Loading...</p>
             ) : (
-              <table className="table table-bordered">
-                <thead>
-                  <tr>
-                    <th>EmployeeID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Position</th>
-                    <th>Salary</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredEmployees.map((emp) => (
-                    <tr key={emp._id}>
-                      <td>{emp.employeeId}</td>
-                      <td>{emp.name}</td>
-                      <td>{emp.email}</td>
-                      <td>{emp.position}</td>
-                      <td>{emp.salary}</td>
-                      <td>
-                        <Link
-                          to={`/admin/edit-employee/${emp._id}`}
-                          className="btn btn-sm btn-warning me-2"
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          className="btn btn-sm btn-danger"
-                          onClick={() => handleDelete(emp._id)}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredEmployees.length === 0 && (
+              <div className="table-container">
+                <table>
+                  <thead>
                     <tr>
-                      <td colSpan="6" className="text-center">
-                        No matching employees found
-                      </td>
+                      <th>Image</th>
+                      <th>EmployeeID</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Position</th>
+                      <th>Salary</th>
+                      <th>Actions</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filteredEmployees.map((emp) => (
+                      <tr key={emp._id}>
+                        <td>
+                          {emp.image ? (
+                            <img
+                              src={`${API_URL}${emp.image}`}
+                              alt={emp.name}
+                              style={{
+                                width: "40px",
+                                height: "40px",
+                                borderRadius: "50%",
+                              }}
+                            />
+                          ) : (
+                            "No Image"
+                          )}
+                        </td>
+                        <td>{emp.employeeId}</td>
+                        <td>{emp.name}</td>
+                        <td>{emp.email}</td>
+                        <td>{emp.position}</td>
+                        <td>{emp.salary}</td>
+                        <td>
+                          <button
+                            className="btn-warning"
+                            onClick={() => setEditEmployee(emp)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="btn-danger"
+                            onClick={() => handleDelete(emp._id)}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredEmployees.length === 0 && (
+                      <tr>
+                        <td colSpan="7" style={{ textAlign: "center" }}>
+                          No matching employees found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             )}
           </>
+        )}
+
+        {/* Edit Employee Form */}
+        {activeTab === "employees" && editEmployee && (
+          <div>
+            <h3 className="mb-3" style={{ color: "#0f3460" }}>
+              Edit Employee
+            </h3>
+            <form onSubmit={handleEditSubmit} className="edit-form">
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label>Employee ID</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editEmployee.employeeId || ""}
+                    onChange={(e) =>
+                      setEditEmployee({
+                        ...editEmployee,
+                        employeeId: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editEmployee.name || ""}
+                    onChange={(e) =>
+                      setEditEmployee({
+                        ...editEmployee,
+                        name: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    className="form-control"
+                    value={editEmployee.email || ""}
+                    onChange={(e) =>
+                      setEditEmployee({
+                        ...editEmployee,
+                        email: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label>Position</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editEmployee.position || ""}
+                    onChange={(e) =>
+                      setEditEmployee({
+                        ...editEmployee,
+                        position: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label>Salary</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={editEmployee.salary || ""}
+                    onChange={(e) =>
+                      setEditEmployee({
+                        ...editEmployee,
+                        salary: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label>Department</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editEmployee.department || ""}
+                    onChange={(e) =>
+                      setEditEmployee({
+                        ...editEmployee,
+                        department: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label>Join Date</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={
+                      editEmployee.joinDate
+                        ? new Date(editEmployee.joinDate).toISOString().split("T")[0]
+                        : ""
+                    }
+                    onChange={(e) =>
+                      setEditEmployee({
+                        ...editEmployee,
+                        joinDate: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="form-actions mt-3">
+                <button type="submit" className="btn btn-success me-2">
+                  Update
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setEditEmployee(null)}
+                >
+                  Back
+                </button>
+              </div>
+            </form>
+          </div>
         )}
 
         {/* Leaves */}
@@ -264,50 +476,60 @@ const AdminDashboard = () => {
             {loadingLeaves ? (
               <p>Loading...</p>
             ) : (
-              <table className="table table-bordered">
-                <thead>
-                  <tr>
-                    <th>Employee</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Reason</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {leaves.map((leave) => (
-                    <tr key={leave._id}>
-                      <td>{leave.userId?.name || "Unknown"}</td>
-                      <td>{new Date(leave.startDate).toLocaleDateString()}</td>
-                      <td>{new Date(leave.endDate).toLocaleDateString()}</td>
-                      <td>{leave.reason}</td>
-                      <td>{leave.status}</td>
-                      <td>
-                        {leave.status === "pending" && (
-                          <>
-                            <button
-                              className="btn btn-sm btn-success me-2"
-                              onClick={() => handleLeaveAction(leave._id, "approved")}
-                            >
-                              Approve
-                            </button>
-                            <button
-                              className="btn btn-sm btn-danger"
-                              onClick={() => handleLeaveAction(leave._id, "rejected")}
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-                      </td>
+              <div className="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Employee</th>
+                      <th>Start</th>
+                      <th>End</th>
+                      <th>Reason</th>
+                      <th>Status</th>
+                      <th>Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {leaves.map((leave) => (
+                      <tr key={leave._id}>
+                        <td>{leave.userId?.name || "Unknown"}</td>
+                        <td>{new Date(leave.startDate).toLocaleDateString()}</td>
+                        <td>{new Date(leave.endDate).toLocaleDateString()}</td>
+                        <td>{leave.reason}</td>
+                        <td>{leave.status}</td>
+                        <td>
+                          {leave.status === "pending" && (
+                            <>
+                              <button
+                                className="btn-success"
+                                onClick={() => handleLeaveAction(leave._id, "approved")}
+                              >
+                                Approve
+                              </button>
+                              <button
+                                className="btn-danger"
+                                onClick={() => handleLeaveAction(leave._id, "rejected")}
+                              >
+                                Reject
+                              </button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </>
         )}
+
+        {/* Other Pages */}
+        {activeTab === "create-employee" && <CreateEmployee />}
+        {activeTab === "attendance" && <EmployeeAttendance />}
+        {activeTab === "salary-slip" && <SalarySlipPage />}
+        {activeTab === "tasks" && <AdminTaskPage />}
+        {activeTab === "messages" && <AdminMessages />}
+        {activeTab === "attendanceGif" && <AttendanceLeaveDashboard />}
       </div>
     </div>
   );

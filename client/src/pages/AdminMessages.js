@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Container, Table, Form, Alert, Spinner, Button } from "react-bootstrap";
+import "./AdminMessages.css";
+
 
 const AdminMessages = () => {
   const [messages, setMessages] = useState([]);

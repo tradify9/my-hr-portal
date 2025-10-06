@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
+import "./CreateEmployee.css";
+
 
 const CreateEmployee = () => {
   const [employeeId, setEmployeeId] = useState("");

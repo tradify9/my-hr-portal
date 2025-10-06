@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "./EmployeeTaskPage.css"; // ✅ custom css
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -38,53 +39,83 @@ export default function EmployeeTaskPage() {
     // eslint-disable-next-line
   }, []);
 
-  return (
-    <div className="container mt-4">
-      <h2 className="text-success mb-4">👨‍💻 My Tasks</h2>
+  // ✅ Badge helper
+  const renderBadge = (text, type) => {
+    let className = "badge ";
+    if (type === "priority") {
+      className +=
+        text === "High"
+          ? "bg-danger"
+          : text === "Medium"
+          ? "bg-warning text-dark"
+          : "bg-secondary";
+    } else if (type === "status") {
+      className +=
+        text === "Completed"
+          ? "bg-success"
+          : text === "In Progress"
+          ? "bg-info text-dark"
+          : "bg-secondary";
+    }
+    return <span className={className}>{text}</span>;
+  };
 
-      <div className="card p-3 shadow-sm">
-        {tasks.length > 0 ? (
-          <table className="table table-bordered table-striped">
-            <thead className="table-light">
-              <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Priority</th>
-                <th>Due Date</th>
-                <th>Status</th>
-                <th>Update</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tasks.map((t) => (
-                <tr key={t._id}>
-                  <td>{t.title}</td>
-                  <td>{t.description || "—"}</td>
-                  <td>{t.priority}</td>
-                  <td>
-                    {t.dueDate
-                      ? new Date(t.dueDate).toLocaleDateString()
-                      : "—"}
-                  </td>
-                  <td>{t.status}</td>
-                  <td>
-                    <select
-                      className="form-select"
-                      value={t.status}
-                      onChange={(e) => updateStatus(t._id, e.target.value)}
-                    >
-                      <option value="Pending">Pending</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Completed">Completed</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p className="text-muted">You don’t have any tasks yet.</p>
-        )}
+  return (
+    <div className="employee-task-page py-4 px-3">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2 className="fw-bold text-primary">My Tasks</h2>
+      </div>
+
+      <div className="card shadow-sm border-0 w-100">
+        <div className="card-body p-0">
+          {tasks.length > 0 ? (
+            <div className="table-responsive">
+              <table className="table table-hover align-middle mb-0">
+                {/* ✅ Light header instead of dark */}
+                <thead className="table-light">
+                  <tr>
+                    <th style={{ width: "15%" }}>Title</th>
+                    <th style={{ width: "30%" }}>Description</th>
+                    <th style={{ width: "10%" }}>Priority</th>
+                    <th style={{ width: "15%" }}>Due Date</th>
+                    <th style={{ width: "10%" }}>Status</th>
+                    <th style={{ width: "20%" }}>Update</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tasks.map((t) => (
+                    <tr key={t._id}>
+                      <td className="fw-semibold">{t.title}</td>
+                      <td>{t.description || "—"}</td>
+                      <td>{renderBadge(t.priority, "priority")}</td>
+                      <td>
+                        {t.dueDate
+                          ? new Date(t.dueDate).toLocaleDateString()
+                          : "—"}
+                      </td>
+                      <td>{renderBadge(t.status, "status")}</td>
+                      <td>
+                        <select
+                          className="form-select form-select-sm"
+                          value={t.status}
+                          onChange={(e) => updateStatus(t._id, e.target.value)}
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="In Progress">In Progress</option>
+                          <option value="Completed">Completed</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-muted text-center py-5 mb-0">
+               You don’t have any tasks yet.
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

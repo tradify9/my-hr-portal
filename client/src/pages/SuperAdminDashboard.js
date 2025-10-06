@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import "./SuperAdminDashboard.css"; // ✅ custom css
 
 const SuperAdminDashboard = () => {
   const [admins, setAdmins] = useState([]);
@@ -118,7 +119,7 @@ const SuperAdminDashboard = () => {
     setActivePage("admins");
   };
 
-  // Logout with confirmation
+  // Logout
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to log out?")) {
       localStorage.removeItem("token");
@@ -127,9 +128,8 @@ const SuperAdminDashboard = () => {
     }
   };
 
-  // Safe Search filter
+  // Safe search filter
   const safeSearch = search?.toLowerCase() || "";
-
   const filteredAdmins = admins.filter((a) => {
     const username = a.username?.toLowerCase() || "";
     const email = a.email?.toLowerCase() || "";
@@ -144,11 +144,11 @@ const SuperAdminDashboard = () => {
 
   // Sidebar menu
   const menuItems = [
-    { key: "dashboard", label: "📊 Dashboard" },
-    { key: "admins", label: "👨‍💻 Manage Admins" },
-    { key: "employees", label: "👷 Employees" },
-    { key: "settings", label: "⚙️ Settings" },
-    { key: "profile", label: "👤 Profile" },
+    { key: "dashboard", label: " Dashboard" },
+    { key: "admins", label: " Manage Admins" },
+    { key: "employees", label: " Employees" },
+    { key: "settings", label: " Settings" },
+    { key: "profile", label: " Profile" },
   ];
 
   // Handle Employee Submit
@@ -216,12 +216,12 @@ const SuperAdminDashboard = () => {
   };
 
   return (
-    <div className="container-fluid">
+    <div className="superadmin-dashboard container-fluid">
       <div className="row">
         {/* Sidebar */}
         <div className="col-3 p-0">
-          <div className="bg-dark text-light vh-100 p-3">
-            <h4 className="text-center mb-4">Super Admin</h4>
+          <div className="superadmin-sidebar">
+            <h4>Super Admin</h4>
             <ul className="nav flex-column">
               {menuItems.map((item) => (
                 <li className="nav-item mb-2" key={item.key}>
@@ -250,10 +250,10 @@ const SuperAdminDashboard = () => {
         </div>
 
         {/* Main content */}
-        <div className="col-9 p-4">
+        <div className="col-9 superadmin-content">
           {activePage === "dashboard" && (
             <div>
-              <h2>📊 Dashboard</h2>
+              <h2>Dashboard</h2>
               <p>Welcome back, {loggedInUser}!</p>
               <p>Total Admins: {admins.length}</p>
               <p>Total Employees: {employees.length}</p>
@@ -262,8 +262,7 @@ const SuperAdminDashboard = () => {
 
           {activePage === "admins" && (
             <div>
-              <h2>👨‍💻 Manage Admins</h2>
-              {/* Search */}
+              <h2>Manage Admins</h2>
               <div className="mb-3">
                 <input
                   type="text"
@@ -277,7 +276,6 @@ const SuperAdminDashboard = () => {
                 </small>
               </div>
 
-              {/* List */}
               {loading ? (
                 <p>Loading admins...</p>
               ) : filteredAdmins.length > 0 ? (
@@ -360,30 +358,13 @@ const SuperAdminDashboard = () => {
                 <button type="submit" className="btn btn-primary">
                   {editId ? "Update Admin" : "Create Admin"}
                 </button>
-                {editId && (
-                  <button
-                    type="button"
-                    className="btn btn-secondary ms-2"
-                    onClick={() => {
-                      setEditId(null);
-                      setUsername("");
-                      setCompany("");
-                      setEmail("");
-                      setPassword("");
-                    }}
-                  >
-                    Cancel
-                  </button>
-                )}
               </form>
             </div>
           )}
 
           {activePage === "employees" && (
             <div>
-              <h2>👷 Employees</h2>
-
-              {/* List */}
+              <h2>Employees</h2>
               {employees.length > 0 ? (
                 <ul className="list-group mb-4">
                   {employees.map((emp) => (
@@ -394,7 +375,7 @@ const SuperAdminDashboard = () => {
                       <div>
                         <strong>{emp.name}</strong> <br />
                         <small>{emp.email}</small> <br />
-                        <em>{emp.position}</em> – 💰 {emp.salary}
+                        <em>{emp.position}</em> {emp.salary}
                       </div>
                       <div>
                         <button
@@ -417,7 +398,6 @@ const SuperAdminDashboard = () => {
                 <p>No employees found.</p>
               )}
 
-              {/* Form */}
               <form className="mt-4" onSubmit={handleSubmitEmployee}>
                 <h4>{empId ? "Update Employee" : "Create New Employee"}</h4>
                 <div className="mb-3">
@@ -463,35 +443,20 @@ const SuperAdminDashboard = () => {
                 <button type="submit" className="btn btn-success">
                   {empId ? "Update Employee" : "Create Employee"}
                 </button>
-                {empId && (
-                  <button
-                    type="button"
-                    className="btn btn-secondary ms-2"
-                    onClick={() => {
-                      setEmpId(null);
-                      setEmpName("");
-                      setEmpEmail("");
-                      setEmpPosition("");
-                      setEmpSalary("");
-                    }}
-                  >
-                    Cancel
-                  </button>
-                )}
               </form>
             </div>
           )}
 
           {activePage === "settings" && (
             <div>
-              <h2>⚙️ Settings</h2>
+              <h2>Settings</h2>
               <p>Here you can manage application settings.</p>
             </div>
           )}
 
           {activePage === "profile" && (
             <div>
-              <h2>👤 Profile</h2>
+              <h2>Profile</h2>
               <p>Welcome, {loggedInUser}</p>
               <p>Email: {email || "Not available"}</p>
             </div>

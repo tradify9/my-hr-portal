@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import "./LeaveForm.css";
+
 
 const LeaveForm = () => {
   const [startDate, setStartDate] = useState('');

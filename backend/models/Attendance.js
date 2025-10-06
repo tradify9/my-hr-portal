@@ -10,8 +10,8 @@ const attendanceSchema = new mongoose.Schema(
     // Punch In Data
     punchIn: { type: Date, required: true },
     punchInLocation: {
-      latitude: { type: Number },
-      longitude: { type: Number },
+      latitude: { type: Number, required: true },
+      longitude: { type: Number, required: true },
     },
     // Punch Out Data
     punchOut: { type: Date, default: null },

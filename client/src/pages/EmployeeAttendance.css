@@ -1,0 +1,42 @@
+.calendar-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Default Calendar Styling */
+.react-calendar {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  font-family: "Poppins", sans-serif;
+  padding: 15px;
+}
+
+.react-calendar__tile {
+  border-radius: 6px;
+  padding: 10px;
+}
+
+/* ✅ Present Day */
+.present-day {
+  background: #5cb85c !important;
+  color: #fff !important;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* ❌ Absent Day */
+.absent-day {
+  background: #d9534f !important;
+  color: #fff !important;
+  border-radius: 6px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+/* Today Highlight */
+.react-calendar__tile--now {
+  background: #0f3460 !important;
+  color: #fff !important;
+}
