@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import "./EmployeeAttendance.css"; // ✅ custom CSS
+import "./EmployeeAttendance.css";
 
 const EmployeeAttendance = () => {
   const token = localStorage.getItem("token");
@@ -15,7 +15,7 @@ const EmployeeAttendance = () => {
 
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [searchEmail, setSearchEmail] = useState(""); // ✅ search box state
+  const [searchEmail, setSearchEmail] = useState("");
   const [filteredAttendance, setFilteredAttendance] = useState([]);
 
   // ✅ Fetch Attendance
@@ -40,7 +40,7 @@ const EmployeeAttendance = () => {
     fetchAttendance();
   }, []);
 
-  // ✅ Search Logic (filter by email)
+  // ✅ Search Logic
   useEffect(() => {
     if (!searchEmail.trim()) {
       setFilteredAttendance(attendance);
@@ -58,10 +58,22 @@ const EmployeeAttendance = () => {
     .filter((record) => record.punchIn)
     .map((record) => new Date(record.punchIn).toDateString());
 
-  // ✅ CSV Download Function
-  const downloadCSV = () => {
-    if (!filteredAttendance.length) {
-      alert("⚠️ No data available to download!");
+  // ✅ Group attendance by month-year
+  const groupedByMonth = filteredAttendance.reduce((acc, record) => {
+    const date = new Date(record.punchIn || record.punchOut);
+    if (!isNaN(date)) {
+      const key = `${date.toLocaleString("default", { month: "long" })}-${date.getFullYear()}`;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(record);
+    }
+    return acc;
+  }, {});
+
+  // ✅ Download CSV for a specific month
+  const downloadCSVByMonth = (monthKey) => {
+    const data = groupedByMonth[monthKey];
+    if (!data || !data.length) {
+      alert(`⚠️ No data for ${monthKey}`);
       return;
     }
 
@@ -74,7 +86,7 @@ const EmployeeAttendance = () => {
       "Punch Out Location",
     ];
 
-    const rows = filteredAttendance.map((record) => [
+    const rows = data.map((record) => [
       record.userId?.name || userName || "Unknown",
       record.userId?.email || userEmail || "—",
       record.punchIn ? new Date(record.punchIn).toLocaleString("en-IN") : "—",
@@ -93,13 +105,13 @@ const EmployeeAttendance = () => {
 
     const link = document.createElement("a");
     link.href = encodeURI(csvContent);
-    link.download = `attendance_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `attendance_${monthKey.replace(" ", "_")}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  // ✅ Helper: Convert lat/long to Google Maps link
+  // ✅ Render location link
   const renderLocation = (location) => {
     if (!location || !location.latitude || !location.longitude) return "—";
     const { latitude, longitude } = location;
@@ -133,26 +145,33 @@ const EmployeeAttendance = () => {
           <Calendar
             tileClassName={({ date }) => {
               const dateStr = date.toDateString();
-              if (presentDates.includes(dateStr)) {
-                return "present-day"; // ✅ present
-              }
-              if (date < new Date()) {
-                return "absent-day"; // ❌ absent
-              }
+              if (presentDates.includes(dateStr)) return "present-day";
+              if (date < new Date()) return "absent-day";
               return "";
             }}
           />
         </div>
       )}
 
-      {/* ✅ Download CSV Button */}
-      <div className="mt-3">
-        <button className="btn btn-success" onClick={downloadCSV}>
-          ⬇️ Download CSV
-        </button>
+      {/* ✅ Month-wise Download Buttons */}
+      <div className="mt-4">
+        <h5>📅 Download Attendance by Month</h5>
+        {Object.keys(groupedByMonth).length ? (
+          Object.keys(groupedByMonth).map((monthKey) => (
+            <button
+              key={monthKey}
+              className="btn btn-primary m-2"
+              onClick={() => downloadCSVByMonth(monthKey)}
+            >
+              ⬇️ Download {monthKey}
+            </button>
+          ))
+        ) : (
+          <p>No monthly data available</p>
+        )}
       </div>
 
-      {/* ✅ Table with Punch In/Out + Location */}
+      {/* ✅ Detailed Table */}
       <div className="mt-4">
         <h5>Detailed Records</h5>
         <table className="table table-bordered table-sm">

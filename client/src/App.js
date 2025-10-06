@@ -19,6 +19,7 @@ import AboutPage from './pages/AboutPage';
 import ContactUs from './pages/ContactUs';
 import HRPortalFeatures from './pages/HRPortalFeatures';
 import EmployeeAttendanceLeaveDashboard from './pages/EmployeeAttendanceLeaveDashboard';
+import HRPortalPolicies from './pages/HrPortalPolicies';
 
 
 function App() {
@@ -115,6 +116,7 @@ function App() {
         <Route path="/contect" element={<ContactUs />} />
         <Route path="/hr/fea" element={<HRPortalFeatures />} />
         <Route path="/employee/gui" element={<EmployeeAttendanceLeaveDashboard />} />
+         <Route path="/HR/policies" element={<HRPortalPolicies />} />
         
 
 
