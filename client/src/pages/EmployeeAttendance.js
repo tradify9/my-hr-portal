@@ -17,6 +17,8 @@ const EmployeeAttendance = () => {
   const [loading, setLoading] = useState(false);
   const [searchEmail, setSearchEmail] = useState("");
   const [filteredAttendance, setFilteredAttendance] = useState([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   // ✅ Fetch Attendance
   const fetchAttendance = async () => {
@@ -40,18 +42,31 @@ const EmployeeAttendance = () => {
     fetchAttendance();
   }, []);
 
-  // ✅ Search Logic
+  // ✅ Filter by Email + Date Range
   useEffect(() => {
-    if (!searchEmail.trim()) {
-      setFilteredAttendance(attendance);
-    } else {
-      setFilteredAttendance(
-        attendance.filter((record) =>
-          (record.userId?.email || "").toLowerCase().includes(searchEmail.toLowerCase())
-        )
+    let filtered = attendance;
+
+    if (searchEmail.trim()) {
+      filtered = filtered.filter((record) =>
+        (record.userId?.email || "")
+          .toLowerCase()
+          .includes(searchEmail.toLowerCase())
       );
     }
-  }, [searchEmail, attendance]);
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+
+      filtered = filtered.filter((record) => {
+        const recordDate = new Date(record.punchIn || record.punchOut);
+        return recordDate >= start && recordDate <= end;
+      });
+    }
+
+    setFilteredAttendance(filtered);
+  }, [searchEmail, startDate, endDate, attendance]);
 
   // ✅ Present Dates Array
   const presentDates = filteredAttendance
@@ -69,14 +84,8 @@ const EmployeeAttendance = () => {
     return acc;
   }, {});
 
-  // ✅ Download CSV for a specific month
-  const downloadCSVByMonth = (monthKey) => {
-    const data = groupedByMonth[monthKey];
-    if (!data || !data.length) {
-      alert(`⚠️ No data for ${monthKey}`);
-      return;
-    }
-
+  // ✅ CSV Helper Function
+  const createCSV = (data) => {
     const headers = [
       "Employee",
       "Email",
@@ -99,50 +108,109 @@ const EmployeeAttendance = () => {
         : "—",
     ]);
 
-    const csvContent =
+    return (
       "data:text/csv;charset=utf-8," +
-      [headers, ...rows].map((e) => e.join(",")).join("\n");
+      [headers, ...rows].map((e) => e.join(",")).join("\n")
+    );
+  };
 
+  // ✅ Download CSV by Month
+  const downloadCSVByMonth = (monthKey) => {
+    const data = groupedByMonth[monthKey];
+    if (!data || !data.length) {
+      alert(`⚠️ No data for ${monthKey}`);
+      return;
+    }
+    const csvContent = createCSV(data);
     const link = document.createElement("a");
     link.href = encodeURI(csvContent);
-    link.download = `attendance_${monthKey.replace(" ", "_")}.csv`;
+    link.download = `attendance_${monthKey}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  // ✅ Render location link
+  // ✅ Download Filtered Data CSV
+  const downloadFilteredCSV = () => {
+    if (!filteredAttendance.length) {
+      alert("⚠️ No filtered data available!");
+      return;
+    }
+    const csvContent = createCSV(filteredAttendance);
+    const link = document.createElement("a");
+    link.href = encodeURI(csvContent);
+    link.download = `attendance_filtered_${new Date()
+      .toISOString()
+      .slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // ✅ Render location as Google Maps link
   const renderLocation = (location) => {
-    if (!location || !location.latitude || !location.longitude) return "—";
-    const { latitude, longitude } = location;
-    const mapUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
+    if (!location?.latitude || !location?.longitude) return "—";
     return (
-      <a href={mapUrl} target="_blank" rel="noopener noreferrer">
-        {latitude}, {longitude}
+      <a
+        href={`https://maps.google.com/?q=${location.latitude},${location.longitude}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {location.latitude}, {location.longitude}
       </a>
     );
   };
 
   return (
-    <div className="container mt-4">
-      <h2>Employee Attendance Calendar</h2>
+    <div className="container mt-5 mb-5 p-4 shadow rounded bg-light">
+      <h2 className="text-center mb-4 fw-bold text-primary">
+        📊 Employee Attendance Dashboard
+      </h2>
 
-      {/* ✅ Search Box */}
-      <div className="mb-3">
-        <input
-          type="text"
-          placeholder="🔍 Search by Email"
-          className="form-control"
-          value={searchEmail}
-          onChange={(e) => setSearchEmail(e.target.value)}
-        />
+      {/* ✅ Filters Section */}
+      <div className="row g-3 mb-4 align-items-end">
+        <div className="col-md-4">
+          <label className="form-label fw-semibold">Search by Email</label>
+          <input
+            type="text"
+            placeholder="e.g. employee@company.com"
+            className="form-control"
+            value={searchEmail}
+            onChange={(e) => setSearchEmail(e.target.value)}
+          />
+        </div>
+        <div className="col-md-3">
+          <label className="form-label fw-semibold">Start Date</label>
+          <input
+            type="date"
+            className="form-control"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+        </div>
+        <div className="col-md-3">
+          <label className="form-label fw-semibold">End Date</label>
+          <input
+            type="date"
+            className="form-control"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </div>
+        <div className="col-md-2 text-center">
+          <button className="btn btn-success w-100" onClick={downloadFilteredCSV}>
+            ⬇️ Export Filtered
+          </button>
+        </div>
       </div>
 
+      {/* ✅ Calendar */}
       {loading ? (
-        <p> Loading...</p>
+        <p className="text-center text-muted">Loading attendance...</p>
       ) : (
-        <div className="calendar-wrapper">
+        <div className="calendar-wrapper d-flex justify-content-center mb-4">
           <Calendar
+            className="shadow rounded"
             tileClassName={({ date }) => {
               const dateStr = date.toDateString();
               if (presentDates.includes(dateStr)) return "present-day";
@@ -153,9 +221,9 @@ const EmployeeAttendance = () => {
         </div>
       )}
 
-      {/* ✅ Month-wise Download Buttons */}
-      <div className="mt-4">
-        <h5>📅 Download Attendance by Month</h5>
+      {/* ✅ Month-wise Download Buttons (same place as before) */}
+      <div className="mt-3 text-center">
+        <h5 className="fw-bold mb-3">📅 Download Attendance by Month</h5>
         {Object.keys(groupedByMonth).length ? (
           Object.keys(groupedByMonth).map((monthKey) => (
             <button
@@ -172,10 +240,10 @@ const EmployeeAttendance = () => {
       </div>
 
       {/* ✅ Detailed Table */}
-      <div className="mt-4">
-        <h5>Detailed Records</h5>
-        <table className="table table-bordered table-sm">
-          <thead>
+      <div className="mt-4 table-responsive">
+        <h5 className="fw-bold mb-3">Detailed Attendance Records</h5>
+        <table className="table table-bordered align-middle">
+          <thead className="table-primary">
             <tr>
               <th>Employee</th>
               <th>Email</th>
@@ -208,7 +276,7 @@ const EmployeeAttendance = () => {
             ) : (
               <tr>
                 <td colSpan="6" className="text-center">
-                  ⚠️ No records found for this email
+                  ⚠️ No records found for this filter
                 </td>
               </tr>
             )}
