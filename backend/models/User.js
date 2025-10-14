@@ -5,34 +5,34 @@ const userSchema = new mongoose.Schema(
   {
     username: {
       type: String,
-      unique: true,
       trim: true,
       lowercase: true,
-      sparse: true,
+      unique: true,
+      sparse: true, // allows null without duplicate error
     },
+
     password: {
       type: String,
       required: true,
       minlength: 6,
-      select: false, // hide password by default
+      select: false, // hide by default
     },
+
     employeeId: {
       type: String,
-      unique: true,
       trim: true,
       lowercase: true,
+      unique: true,
       sparse: true,
-      required: function () {
-        return this.role === "employee";
-      },
+      default: null, // ✅ no validation errors for admins
     },
+
     name: {
       type: String,
       trim: true,
-      required: function () {
-        return this.role === "employee";
-      },
+      default: null,
     },
+
     email: {
       type: String,
       required: true,
@@ -40,94 +40,98 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+
     department: {
       type: String,
       trim: true,
-      required: function () {
-        return this.role === "employee";
-      },
+      default: null,
     },
+
     position: {
       type: String,
-      required: function () {
-        return this.role === "employee";
-      },
+      default: null,
     },
+
     salary: {
       type: Number,
-      required: function () {
-        return this.role === "employee";
-      },
+      default: null,
     },
+
     joinDate: {
       type: Date,
-      required: function () {
-        return this.role === "employee";
-      },
+      default: null,
     },
+
     company: {
       type: String,
       trim: true,
-      required: function () {
-        return this.role === "admin";
-      },
+      default: null,
     },
+
     image: {
       type: String,
       default: null,
     },
+
     role: {
       type: String,
       enum: ["superadmin", "admin", "employee"],
       default: "employee",
     },
+
     adminId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      default: null,
     },
-    resetOtp: { type: String, select: false },
-    resetOtpExpire: { type: Date, select: false },
+
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+
+    resetOtp: { type: String, select: false, default: null },
+    resetOtpExpire: { type: Date, select: false, default: null },
   },
   { timestamps: true }
 );
 
-/**
- * 🔹 Pre-save hook (hash password if modified)
- */
+/* ======================================================
+   🔹 Pre-save Hook
+   Auto-generate username + hash password
+====================================================== */
 userSchema.pre("save", async function (next) {
   try {
+    // Auto-generate username if missing
     if (this.isNew && !this.username) {
-      if (this.name) {
-        const base = this.name.toLowerCase().replace(/\s+/g, "");
-        this.username = `${base}${Math.floor(1000 + Math.random() * 9000)}`;
-      } else if (this.email) {
-        const base = this.email.split("@")[0];
-        this.username = `${base}${Math.floor(1000 + Math.random() * 9000)}`;
-      } else {
-        this.username = `user${Date.now()}`;
-      }
+      let base = "";
+
+      if (this.name) base = this.name.toLowerCase().replace(/\s+/g, "");
+      else if (this.email) base = this.email.split("@")[0].toLowerCase();
+      else base = "user";
+
+      this.username = `${base}${Math.floor(1000 + Math.random() * 9000)}`;
     }
 
+    // Hash password if new or changed
     if (this.isModified("password")) {
-      console.log("🔑 Hashing password for:", this.username || this.email);
       this.password = await bcrypt.hash(this.password, 10);
     }
 
     next();
   } catch (err) {
+    console.error("❌ Error in pre-save hook:", err.message);
     next(err);
   }
 });
 
-/**
- * 🔹 Pre-update hook (for findOneAndUpdate & updateOne)
- * ensures password is hashed when updated directly
- */
+/* ======================================================
+   🔹 Pre-update Hooks (hash password on update)
+====================================================== */
 async function hashPasswordHook(next) {
   const update = this.getUpdate();
 
   if (update?.password) {
-    console.log("🔑 Hashing password in update for:", update.username || update.email);
     update.password = await bcrypt.hash(update.password, 10);
     this.setUpdate(update);
   }
@@ -138,17 +142,17 @@ async function hashPasswordHook(next) {
 userSchema.pre("findOneAndUpdate", hashPasswordHook);
 userSchema.pre("updateOne", hashPasswordHook);
 
-/**
- * 🔹 Compare password
- */
+/* ======================================================
+   🔹 Compare Password
+====================================================== */
 userSchema.methods.comparePassword = async function (plainPassword) {
   if (!this.password) return false;
   return bcrypt.compare(plainPassword, this.password);
 };
 
-/**
- * 🔹 Clean response
- */
+/* ======================================================
+   🔹 Clean JSON Response
+====================================================== */
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
@@ -158,9 +162,14 @@ userSchema.methods.toJSON = function () {
   return obj;
 };
 
-// Indexes
+/* ======================================================
+   🔹 Indexes
+====================================================== */
 userSchema.index({ username: 1 }, { unique: true, sparse: true });
 userSchema.index({ employeeId: 1 }, { unique: true, sparse: true });
 userSchema.index({ email: 1 }, { unique: true });
 
+/* ======================================================
+   🔹 Export Model
+====================================================== */
 module.exports = mongoose.model("User", userSchema);

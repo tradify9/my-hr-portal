@@ -1,10 +1,5 @@
-/* Global */
-body {
-  margin: 0;
-  font-family: "Poppins", sans-serif;
-  background: #f8f9fa;
-  color: #2d2d2d;
-}
+/* 🌍 Global */
+ 
 
 h1, h2, h3, h4, h5 {
   font-family: "Poppins", sans-serif;
@@ -13,21 +8,29 @@ h1, h2, h3, h4, h5 {
   color: #0f3460; /* Professional dark blue */
 }
 
-/* Dashboard Layout */
+/* ====== 📊 Dashboard Layout ====== */
 .dashboard-container {
   display: flex;
   min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
 }
 
-/* Sidebar */
+/* ====== 🧭 Sidebar ====== */
 .sidebar {
   width: 240px;
-  background: #1a1a2e;
+  background: #0f3460; /* ✅ Changed from #1a1a2e to theme blue */
   color: #fff;
   padding: 25px 20px;
   display: flex;
   flex-direction: column;
-  box-shadow: 3px 0 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  transition: transform 0.3s ease-in-out;
+  z-index: 1050;
 }
 
 .sidebar-title {
@@ -36,15 +39,17 @@ h1, h2, h3, h4, h5 {
   color: #fff;
   margin-bottom: 20px;
   letter-spacing: 0.5px;
+  text-align: center;
 }
 
 .profile-info {
   font-size: 0.9rem;
   margin: 3px 0;
   opacity: 0.85;
+  text-align: center;
 }
 
-/* Nav Links */
+/* ====== Navigation Links ====== */
 .nav-links {
   list-style: none;
   padding: 0;
@@ -52,8 +57,7 @@ h1, h2, h3, h4, h5 {
   flex-grow: 1;
 }
 
-.nav-links li,
-.nav-links li a {
+.nav-links li {
   display: block;
   padding: 10px 14px;
   margin: 6px 0;
@@ -65,20 +69,20 @@ h1, h2, h3, h4, h5 {
   cursor: pointer;
 }
 
-.nav-links li:hover,
-.nav-links li a:hover {
-  background: #16213e;
+.nav-links li:hover {
+  background: #162d5c;
   color: #fff;
   transform: translateX(4px);
 }
 
 .nav-links .active {
-  background: #0f3460;
+  background: #e94560; /* ✅ Red active */
   color: #fff;
   font-weight: 600;
+  transform: none;
 }
 
-/* Logout Button */
+/* ====== 🔴 Logout Button ====== */
 .logout-btn {
   background: #e94560;
   border: none;
@@ -87,7 +91,7 @@ h1, h2, h3, h4, h5 {
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.3s ease;
 }
 
 .logout-btn:hover {
@@ -95,29 +99,53 @@ h1, h2, h3, h4, h5 {
   transform: scale(1.05);
 }
 
-/* Main Content */
+/* ====== 📱 Responsive Sidebar ====== */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.show {
+    transform: translateX(0);
+  }
+}
+
+/* ====== 🧾 Main Content ====== */
 .main-content {
   flex-grow: 1;
   padding: 30px;
   background: #f8f9fa;
+  margin-left: 240px;
+  transition: margin-left 0.3s ease-in-out;
 }
 
 .main-content h2 {
   font-size: 1.6rem;
   font-weight: 600;
+  color: #0f3460;
 }
 
 .main-content h5 {
   font-weight: 400;
-  color: #444;
+  color: #555;
   margin-bottom: 25px;
 }
 
-/* Section Header */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: 20px;
+    margin-top: 60px; /* for optional topbar */
+  }
+}
+
+/* ====== 🔍 Section Header ====== */
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
 .section-header input {
@@ -135,7 +163,7 @@ h1, h2, h3, h4, h5 {
   box-shadow: 0 0 5px rgba(15, 52, 96, 0.3);
 }
 
-/* Table Styling */
+/* ====== 📋 Table Styling ====== */
 .table-container {
   margin-top: 20px;
   background: #fff;
@@ -148,13 +176,14 @@ h1, h2, h3, h4, h5 {
 .table-container table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 600px;
 }
 
 .table-container th,
 .table-container td {
   padding: 12px;
   border-bottom: 1px solid #eaeaea;
-  text-align: left;
+  text-align: center;
   font-size: 0.92rem;
 }
 
@@ -168,7 +197,7 @@ h1, h2, h3, h4, h5 {
   background: #f4f6fb;
 }
 
-/* Buttons */
+/* ====== 🎨 Buttons ====== */
 .btn-warning,
 .btn-danger,
 .btn-success {
@@ -186,15 +215,13 @@ h1, h2, h3, h4, h5 {
 .btn-warning {
   background: #f0ad4e;
 }
-
 .btn-warning:hover {
   background: #ec971f;
 }
 
 .btn-danger {
-  background: #d9534f;
+  background: #e94560;
 }
-
 .btn-danger:hover {
   background: #c9302c;
 }
@@ -202,27 +229,14 @@ h1, h2, h3, h4, h5 {
 .btn-success {
   background: #5cb85c;
 }
-
 .btn-success:hover {
   background: #449d44;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-/* Edit Form Container */
+/* ====== 🧾 Edit Form ====== */
 .edit-form {
   max-width: 650px;
-  margin: 15px auto;
+  margin: 20px auto;
   padding: 15px;
   background: #fff;
   border-radius: 8px;
@@ -233,7 +247,7 @@ h1, h2, h3, h4, h5 {
 /* Labels */
 .edit-form label {
   font-weight: 600;
-  font-size: 12px;   /* ✅ छोटा font */
+  font-size: 12px;
   color: #0f3460;
   margin-bottom: 3px;
   display: block;
@@ -242,8 +256,8 @@ h1, h2, h3, h4, h5 {
 /* Inputs & Textareas */
 .edit-form .form-control {
   font-size: 12px;
-  padding: 3px 8px;   /* ✅ padding कम */
-  height: 28px;       /* ✅ बहुत slim height */
+  padding: 3px 8px;
+  height: 28px;
   border: 1px solid #0f3460;
   border-radius: 5px;
   background: #f8faff;
@@ -252,7 +266,7 @@ h1, h2, h3, h4, h5 {
 
 /* Textarea */
 .edit-form textarea.form-control {
-  min-height: 45px;   /* ✅ compact textarea */
+  min-height: 45px;
   resize: vertical;
   padding: 4px 8px;
 }
@@ -269,17 +283,17 @@ h1, h2, h3, h4, h5 {
   margin-top: 4px;
   border-radius: 5px;
   border: 1px solid #0f3460;
-  width: 55px;    /* ✅ छोटा preview */
+  width: 55px;
   height: 55px;
   object-fit: cover;
 }
 
-/* Buttons */
+/* Form Buttons */
 .btn-success {
   background: #0f3460;
   border: none;
   font-size: 12px;
-  padding: 5px 12px;   /* ✅ slim button */
+  padding: 5px 12px;
   border-radius: 5px;
   font-weight: 600;
 }
@@ -292,7 +306,7 @@ h1, h2, h3, h4, h5 {
   color: #0f3460;
   border: 1px solid #0f3460;
   font-size: 12px;
-  padding: 4px 12px;   /* ✅ smaller */
+  padding: 4px 12px;
   border-radius: 5px;
   font-weight: 600;
 }
@@ -301,3 +315,23 @@ h1, h2, h3, h4, h5 {
   color: #fff;
 }
 
+/* ====== 📱 Responsive Adjustments ====== */
+@media (max-width: 576px) {
+  .section-header input {
+    width: 100%;
+  }
+
+  .table-container {
+    padding: 12px;
+  }
+
+  .table-container th,
+  .table-container td {
+    font-size: 0.8rem;
+    padding: 8px;
+  }
+
+  .edit-form {
+    padding: 12px;
+  }
+}

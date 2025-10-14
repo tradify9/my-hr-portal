@@ -20,7 +20,6 @@ const EmployeeAttendance = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // ✅ Fetch Attendance
   const fetchAttendance = async () => {
     setLoading(true);
     try {
@@ -42,7 +41,6 @@ const EmployeeAttendance = () => {
     fetchAttendance();
   }, []);
 
-  // ✅ Filter by Email + Date Range
   useEffect(() => {
     let filtered = attendance;
 
@@ -68,12 +66,10 @@ const EmployeeAttendance = () => {
     setFilteredAttendance(filtered);
   }, [searchEmail, startDate, endDate, attendance]);
 
-  // ✅ Present Dates Array
   const presentDates = filteredAttendance
     .filter((record) => record.punchIn)
     .map((record) => new Date(record.punchIn).toDateString());
 
-  // ✅ Group attendance by month-year
   const groupedByMonth = filteredAttendance.reduce((acc, record) => {
     const date = new Date(record.punchIn || record.punchOut);
     if (!isNaN(date)) {
@@ -84,7 +80,6 @@ const EmployeeAttendance = () => {
     return acc;
   }, {});
 
-  // ✅ CSV Helper Function
   const createCSV = (data) => {
     const headers = [
       "Employee",
@@ -93,6 +88,7 @@ const EmployeeAttendance = () => {
       "Punch In Location",
       "Punch Out Time",
       "Punch Out Location",
+      "Total Hours Worked",
     ];
 
     const rows = data.map((record) => [
@@ -106,6 +102,7 @@ const EmployeeAttendance = () => {
       record.punchOutLocation
         ? `${record.punchOutLocation.latitude}, ${record.punchOutLocation.longitude}`
         : "—",
+      calculateWorkingHours(record.punchIn, record.punchOut),
     ]);
 
     return (
@@ -114,7 +111,6 @@ const EmployeeAttendance = () => {
     );
   };
 
-  // ✅ Download CSV by Month
   const downloadCSVByMonth = (monthKey) => {
     const data = groupedByMonth[monthKey];
     if (!data || !data.length) {
@@ -130,7 +126,6 @@ const EmployeeAttendance = () => {
     document.body.removeChild(link);
   };
 
-  // ✅ Download Filtered Data CSV
   const downloadFilteredCSV = () => {
     if (!filteredAttendance.length) {
       alert("⚠️ No filtered data available!");
@@ -147,7 +142,18 @@ const EmployeeAttendance = () => {
     document.body.removeChild(link);
   };
 
-  // ✅ Render location as Google Maps link
+  // ✅ NEW: Function to calculate total working hours
+  const calculateWorkingHours = (punchIn, punchOut) => {
+    if (!punchIn || !punchOut) return "—";
+    const diffMs = new Date(punchOut) - new Date(punchIn);
+    if (diffMs <= 0) return "—";
+
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+    return `${hours}h ${minutes}m`;
+  };
+
   const renderLocation = (location) => {
     if (!location?.latitude || !location?.longitude) return "—";
     return (
@@ -162,14 +168,12 @@ const EmployeeAttendance = () => {
   };
 
   return (
-    <div className="container mt-5 mb-5 p-4 shadow rounded bg-light">
-      <h2 className="text-center mb-4 fw-bold text-primary">
-        📊 Employee Attendance Dashboard
-      </h2>
+    <div className="attendance-container">
+      <h2 className="attendance-title">📊 Employee Attendance Dashboard</h2>
 
       {/* ✅ Filters Section */}
-      <div className="row g-3 mb-4 align-items-end">
-        <div className="col-md-4">
+      <div className="filters-container row g-3 mb-4">
+        <div className="col-md-4 col-sm-12">
           <label className="form-label fw-semibold">Search by Email</label>
           <input
             type="text"
@@ -179,7 +183,7 @@ const EmployeeAttendance = () => {
             onChange={(e) => setSearchEmail(e.target.value)}
           />
         </div>
-        <div className="col-md-3">
+        <div className="col-md-3 col-6">
           <label className="form-label fw-semibold">Start Date</label>
           <input
             type="date"
@@ -188,7 +192,7 @@ const EmployeeAttendance = () => {
             onChange={(e) => setStartDate(e.target.value)}
           />
         </div>
-        <div className="col-md-3">
+        <div className="col-md-3 col-6">
           <label className="form-label fw-semibold">End Date</label>
           <input
             type="date"
@@ -197,9 +201,9 @@ const EmployeeAttendance = () => {
             onChange={(e) => setEndDate(e.target.value)}
           />
         </div>
-        <div className="col-md-2 text-center">
+        <div className="col-md-2 col-12">
           <button className="btn btn-success w-100" onClick={downloadFilteredCSV}>
-            ⬇️ Export Filtered
+            ⬇️ Export
           </button>
         </div>
       </div>
@@ -208,9 +212,9 @@ const EmployeeAttendance = () => {
       {loading ? (
         <p className="text-center text-muted">Loading attendance...</p>
       ) : (
-        <div className="calendar-wrapper d-flex justify-content-center mb-4">
+        <div className="calendar-wrapper">
           <Calendar
-            className="shadow rounded"
+            className="attendance-calendar shadow-sm"
             tileClassName={({ date }) => {
               const dateStr = date.toDateString();
               if (presentDates.includes(dateStr)) return "present-day";
@@ -221,8 +225,8 @@ const EmployeeAttendance = () => {
         </div>
       )}
 
-      {/* ✅ Month-wise Download Buttons (same place as before) */}
-      <div className="mt-3 text-center">
+      {/* ✅ Month Download Buttons */}
+      <div className="month-download-section text-center">
         <h5 className="fw-bold mb-3">📅 Download Attendance by Month</h5>
         {Object.keys(groupedByMonth).length ? (
           Object.keys(groupedByMonth).map((monthKey) => (
@@ -231,60 +235,67 @@ const EmployeeAttendance = () => {
               className="btn btn-primary m-2"
               onClick={() => downloadCSVByMonth(monthKey)}
             >
-              ⬇️ Download {monthKey}
+              ⬇️ {monthKey}
             </button>
           ))
         ) : (
-          <p>No monthly data available</p>
+          <p className="text-muted">No monthly data available</p>
         )}
       </div>
 
       {/* ✅ Detailed Table */}
-      <div className="mt-4 table-responsive">
+      <div className="attendance-table-wrapper mt-4">
         <h5 className="fw-bold mb-3">Detailed Attendance Records</h5>
-        <table className="table table-bordered align-middle">
-          <thead className="table-primary">
-            <tr>
-              <th>Employee</th>
-              <th>Email</th>
-              <th>Punch In</th>
-              <th>Punch In Location</th>
-              <th>Punch Out</th>
-              <th>Punch Out Location</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredAttendance.length ? (
-              filteredAttendance.map((record) => (
-                <tr key={record._id}>
-                  <td>{record.userId?.name || userName || "Unknown"}</td>
-                  <td>{record.userId?.email || userEmail || "—"}</td>
-                  <td>
-                    {record.punchIn
-                      ? new Date(record.punchIn).toLocaleString("en-IN")
-                      : "—"}
-                  </td>
-                  <td>{renderLocation(record.punchInLocation)}</td>
-                  <td>
-                    {record.punchOut
-                      ? new Date(record.punchOut).toLocaleString("en-IN")
-                      : "—"}
-                  </td>
-                  <td>{renderLocation(record.punchOutLocation)}</td>
-                </tr>
-              ))
-            ) : (
+        <div className="table-responsive">
+          <table className="table table-bordered align-middle">
+            <thead className="table-primary">
               <tr>
-                <td colSpan="6" className="text-center">
-                  ⚠️ No records found for this filter
-                </td>
+                <th>Employee</th>
+                <th>Email</th>
+                <th>Punch In</th>
+                <th>Punch In Location</th>
+                <th>Punch Out</th>
+                <th>Punch Out Location</th>
+                <th>Total Hours</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredAttendance.length ? (
+                filteredAttendance.map((record) => (
+                  <tr key={record._id}>
+                    <td>{record.userId?.name || userName || "Unknown"}</td>
+                    <td>{record.userId?.email || userEmail || "—"}</td>
+                    <td>
+                      {record.punchIn
+                        ? new Date(record.punchIn).toLocaleString("en-IN")
+                        : "—"}
+                    </td>
+                    <td>{renderLocation(record.punchInLocation)}</td>
+                    <td>
+                      {record.punchOut
+                        ? new Date(record.punchOut).toLocaleString("en-IN")
+                        : "—"}
+                    </td>
+                    <td>{renderLocation(record.punchOutLocation)}</td>
+                    <td className="fw-semibold text-success">
+                      {calculateWorkingHours(record.punchIn, record.punchOut)}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="text-center">
+                    ⚠️ No records found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 };
 
-export default EmployeeAttendance;
+export default EmployeeAttendance; 
+   

@@ -1,19 +1,26 @@
 /* ========= Layout ========= */
 .superadmin-dashboard {
+  display: flex;
+  flex-wrap: nowrap;
   min-height: 100vh;
   font-family: "Poppins", sans-serif;
   background: #f8f9fa;
+  overflow-x: hidden;
+  transition: all 0.3s ease;
 }
 
 /* ========= Sidebar ========= */
 .superadmin-sidebar {
   background: #1e1e2f;
   color: #fff;
+  width: 260px;
   height: 100vh;
-  padding: 20px 15px;
-  position: sticky;
+  padding: 25px 15px;
+  position: fixed;
   top: 0;
   left: 0;
+  transition: transform 0.3s ease;
+  z-index: 1000;
 }
 
 .superadmin-sidebar h4 {
@@ -56,9 +63,33 @@
   padding: 6px 12px;
 }
 
+/* ========= Sidebar Toggle Button ========= */
+.sidebar-toggle {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 1100;
+  background: #0d6efd;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 20px;
+  cursor: pointer;
+  display: none;
+  transition: background 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+  background: #0b5ed7;
+}
+
 /* ========= Main Content ========= */
 .superadmin-content {
-  padding: 30px;
+  flex-grow: 1;
+  margin-left: 260px;
+  padding: 40px 30px;
+  transition: margin-left 0.3s ease;
 }
 
 .superadmin-content h2 {
@@ -70,6 +101,16 @@
 
 .superadmin-content p {
   color: #555;
+  font-size: 0.95rem;
+}
+
+/* ========= Cards / Containers ========= */
+.superadmin-content .content-card {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
 }
 
 /* ========= List Groups ========= */
@@ -77,6 +118,7 @@
   border-radius: 8px;
   margin-bottom: 8px;
   border: 1px solid #dee2e6;
+  background: #fff;
 }
 
 .superadmin-content .list-group-item strong {
@@ -109,12 +151,64 @@
   padding: 8px 16px;
 }
 
-.superadmin-content .btn-warning {
+.superadmin-content .btn-warning,
+.superadmin-content .btn-danger {
   border-radius: 8px;
   font-size: 0.85rem;
 }
 
-.superadmin-content .btn-danger {
-  border-radius: 8px;
-  font-size: 0.85rem;
+/* ========= Dashboard Stats ========= */
+.stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.stat-card {
+  flex: 1;
+  min-width: 150px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  transition: 0.3s ease;
+}
+
+.stat-card:hover {
+  background: #e9eef5;
+  transform: translateY(-3px);
+}
+
+/* ========= Responsive ========= */
+@media (max-width: 992px) {
+  .superadmin-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .superadmin-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .superadmin-content {
+    margin-left: 0;
+    padding-top: 70px;
+  }
+
+  .sidebar-toggle {
+    display: block;
+  }
+}
+
+@media (max-width: 576px) {
+  .superadmin-content {
+    padding: 20px 15px;
+  }
+
+  .superadmin-content h2 {
+    font-size: 1.4rem;
+  }
+
+  .stat-card {
+    min-width: 100%;
+  }
 }

@@ -10,14 +10,40 @@ const PunchInOut = () => {
 
   const [status, setStatus] = useState("loading");
   const [attendance, setAttendance] = useState([]);
-  const [value, setValue] = useState(new Date());
+  const [todayRecord, setTodayRecord] = useState(null);
+  const [isPunching, setIsPunching] = useState(false);
 
-  // ✅ Utility: format local date "YYYY-MM-DD"
-  const formatDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+  // ✅ Always ensure data is an array
+  const ensureArray = (data) =>
+    Array.isArray(data) ? data : data ? [data] : [];
+
+  // ✅ Convert Date → YYYY-MM-DD
+  const toLocalDateString = (dateInput) => {
+    const d = new Date(dateInput);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
+
+  const todayStr = toLocalDateString(new Date());
+
+  // ✅ Get user location (optional)
+  const getLocation = async () => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        return resolve({ latitude: null, longitude: null });
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          resolve({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          });
+        },
+        () => resolve({ latitude: null, longitude: null })
+      );
+    });
   };
 
   // ✅ Fetch Attendance
@@ -27,25 +53,39 @@ const PunchInOut = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const att = res.data.attendance || [];
-      setAttendance(att);
+      const records = ensureArray(res.data.attendance);
 
-      // ✅ check today's status
-      const today = formatDate(new Date());
-      const todayRec = att.find(
-        (rec) => rec.punchIn && formatDate(new Date(rec.punchIn)) === today
+      // Auto punch-out if yesterday incomplete
+      if (records.length) {
+        const last = records[records.length - 1];
+        const lastDate = toLocalDateString(last.punchIn);
+        if (lastDate !== todayStr && !last.punchOut) {
+          try {
+            await axios.post(
+              `${API_URL}/api/employee/auto-punch-out`,
+              { recordId: last._id },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            console.log("✅ Auto punch-out done for previous day");
+          } catch (err) {
+            console.error("Auto punch-out failed:", err.message);
+          }
+        }
+      }
+
+      const todayRec = records.find(
+        (rec) => toLocalDateString(rec.punchIn) === todayStr
       );
 
-      if (!todayRec) {
-        setStatus("none");
-      } else if (todayRec.punchIn && !todayRec.punchOut) {
-        setStatus("punchedIn");
-      } else {
-        setStatus("punchedOut");
-      }
+      setAttendance(records);
+      setTodayRecord(todayRec || null);
+
+      if (!todayRec) setStatus("none");
+      else if (todayRec && !todayRec.punchOut) setStatus("punchedIn");
+      else setStatus("punchedOut");
     } catch (err) {
-      console.error("Attendance fetch error:", err.response?.data || err.message);
-      setAttendance([]);
+      console.error("Fetch Attendance Error:", err.message);
+      setAttendance([]); // ensure it's always an array
       setStatus("none");
     }
   };
@@ -54,22 +94,24 @@ const PunchInOut = () => {
     fetchAttendance();
   }, []);
 
-  // ✅ Get Location
-  const getLocation = () =>
-    new Promise((resolve, reject) => {
-      if (!navigator.geolocation) reject("Geolocation not supported");
-      navigator.geolocation.getCurrentPosition(
-        (pos) =>
-          resolve({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          }),
-        (err) => reject(err.message)
-      );
-    });
+  // ✅ Auto-refresh at midnight
+  useEffect(() => {
+    const now = new Date();
+    const millisTillMidnight =
+      new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5) -
+      now;
+    const timer = setTimeout(fetchAttendance, millisTillMidnight);
+    return () => clearTimeout(timer);
+  }, [attendance]);
 
   // ✅ Punch In
   const handlePunchIn = async () => {
+    if (status === "punchedIn")
+      return alert("⚠️ Already punched in today!");
+    if (status === "punchedOut")
+      return alert("✅ You've already completed today's attendance.");
+
+    setIsPunching(true);
     try {
       const loc = await getLocation();
       const res = await axios.post(
@@ -78,20 +120,30 @@ const PunchInOut = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const newRecord = res.data.attendance;
+      const updatedAttendance = ensureArray(res.data.attendance);
+      setAttendance(updatedAttendance);
 
-      alert("✅ Punched In at " + new Date(newRecord.punchIn).toLocaleTimeString());
+      const todayRec = updatedAttendance.find(
+        (rec) => toLocalDateString(rec.punchIn) === todayStr
+      );
+      setTodayRecord(todayRec || null);
 
-      setAttendance((prev) => [...prev, newRecord]);
       setStatus("punchedIn");
+      alert("✅ Punched In successfully!");
     } catch (err) {
-      console.error("PunchIn error:", err.response?.data || err.message);
-      alert(err.response?.data?.msg || "Punch In failed");
+      console.error("Punch In Error:", err.message);
+      alert(err.response?.data?.msg || "Punch In failed.");
+    } finally {
+      setIsPunching(false);
     }
   };
 
   // ✅ Punch Out
   const handlePunchOut = async () => {
+    if (status !== "punchedIn" || isPunching)
+      return alert("⚠️ Please punch in first before punching out.");
+
+    setIsPunching(true);
     try {
       const loc = await getLocation();
       const res = await axios.post(
@@ -100,85 +152,80 @@ const PunchInOut = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const updatedRecord = res.data.attendance;
+      const updatedAttendance = ensureArray(res.data.attendance);
+      setAttendance(updatedAttendance);
 
-      alert("✅ Punched Out at " + new Date(updatedRecord.punchOut).toLocaleTimeString());
-
-      setAttendance((prev) =>
-        prev.map((rec) =>
-          rec._id === updatedRecord._id ? updatedRecord : rec
-        )
+      const todayRec = updatedAttendance.find(
+        (rec) => toLocalDateString(rec.punchIn) === todayStr
       );
+      setTodayRecord(todayRec || null);
+
       setStatus("punchedOut");
+      alert("✅ Punched Out successfully!");
     } catch (err) {
-      console.error("PunchOut error:", err.response?.data || err.message);
-      alert(err.response?.data?.msg || "Punch Out failed");
+      console.error("Punch Out Error:", err.message);
+      alert(err.response?.data?.msg || "Punch Out failed.");
+    } finally {
+      setIsPunching(false);
     }
   };
 
-  // ✅ Highlight Calendar (fixed)
+  // ✅ Calendar highlight
   const tileClassName = ({ date, view }) => {
-    if (view === "month") {
-      const dateStr = formatDate(date);
-      const todayStr = formatDate(new Date());
-
-      const dateOnly = new Date(dateStr).setHours(0, 0, 0, 0);
-      const todayOnly = new Date(todayStr).setHours(0, 0, 0, 0);
-
-      // ✅ Present day check
-      const record = attendance.find(
-        (rec) => rec.punchIn && formatDate(new Date(rec.punchIn)) === dateStr
+    if (view === "month" && Array.isArray(attendance)) {
+      const dateStr = toLocalDateString(date);
+      const rec = attendance.find(
+        (r) => r.punchIn && toLocalDateString(r.punchIn) === dateStr
       );
-      if (record) {
-        return "present-day"; // 🟢 Present
-      }
-
-      // ✅ Past absent
-      if (dateOnly < todayOnly) {
-        return "absent-day"; // 🔴 Absent
-      }
-
-      // ✅ Today without punch & Future → Neutral
-      return null;
+      if (rec) return "present-day";
+      const today = toLocalDateString(new Date());
+      if (dateStr < today) return "absent-day";
     }
     return null;
   };
 
-  if (status === "loading") {
-    return <p>Checking status...</p>;
-  }
+  if (status === "loading") return <p>Checking attendance...</p>;
 
   return (
-    <div className="punch-container my-4">
-      {/* Punch Buttons */}
+    <div className="punch-container my-4 text-center">
+      {/* ✅ Buttons */}
       <div className="button-group mb-4">
         <button
           className="btn btn-success me-3"
           onClick={handlePunchIn}
-          disabled={status !== "none"}
+          disabled={isPunching || status === "punchedIn" || status === "punchedOut"}
         >
-          Punch In
+          {isPunching ? "Punching In..." : "Punch In"}
         </button>
         <button
           className="btn btn-danger"
           onClick={handlePunchOut}
-          disabled={status !== "punchedIn"}
+          disabled={isPunching || status !== "punchedIn"}
         >
-          Punch Out
+          {isPunching ? "Punching Out..." : "Punch Out"}
         </button>
-        {status === "punchedOut" && (
-          <p className="text-muted mt-2 mb-0 small">✅ Already punched today.</p>
-        )}
       </div>
 
-      {/* Calendar */}
+      {/* ✅ Today's Record */}
+      {todayRecord && (
+        <div className="bg-light p-3 rounded-3 mb-3 shadow-sm">
+          <p className="mb-1">
+            <strong>Punch In:</strong>{" "}
+            {new Date(todayRecord.punchIn).toLocaleTimeString()}
+          </p>
+          <p className="mb-0">
+            <strong>Punch Out:</strong>{" "}
+            {todayRecord.punchOut
+              ? new Date(todayRecord.punchOut).toLocaleTimeString()
+              : "— Not yet —"}
+          </p>
+        </div>
+      )}
+
+      {/* ✅ Calendar */}
       <div className="calendar-card shadow-lg p-4 rounded-4">
-        <h5 className="fw-bold text-primary mb-3">Attendance</h5>
-        <Calendar
-          value={value}
-          onChange={setValue}
-          tileClassName={tileClassName}
-        />
+        <h5 className="fw-bold text-primary mb-3">Attendance Calendar</h5>
+        <Calendar value={new Date()} tileClassName={tileClassName} />
         <div className="legend mt-3">
           <span className="badge bg-success me-2">Present</span>
           <span className="badge bg-danger me-2">Absent</span>

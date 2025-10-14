@@ -101,20 +101,13 @@ const CreateEmployee = () => {
   };
 
   return (
-   <div className="container mt-5">
+  <div className="container mt-5">
   <h3>{id ? "Update Employee" : "Create New Employee"}</h3>
+
   <form className="mt-4" onSubmit={handleSubmit} encType="multipart/form-data">
     <div className="row g-3">
-      {/* Employee ID */}
-      <div className="col-md-6">
-        <input
-          type="text"
-          className="form-control"
-          value={employeeId}
-          readOnly
-        />
-        <small className="text-muted">Employee ID (Auto-generated / Fixed)</small>
-      </div>
+      {/* ✅ Hidden Employee ID (auto-generated / backend use only) */}
+      <input type="hidden" value={employeeId} />
 
       {/* Name */}
       <div className="col-md-6">
@@ -223,11 +216,19 @@ const CreateEmployee = () => {
       </div>
     </div>
 
-    {/* Submit Button full row */}
+    {/* Submit Button */}
     <div className="row mt-4">
       <div className="col-12">
-        <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-          {loading ? "Saving..." : id ? "Update Employee" : "Create Employee"}
+        <button
+          type="submit"
+          className="btn btn-primary w-100"
+          disabled={loading}
+        >
+          {loading
+            ? "Saving..."
+            : id
+            ? "Update Employee"
+            : "Create Employee"}
         </button>
       </div>
     </div>

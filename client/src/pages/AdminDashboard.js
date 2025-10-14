@@ -20,7 +20,9 @@ import {
   FaEnvelope,
   FaSignOutAlt,
   FaClipboardList,
-  FaTachometerAlt
+  FaTachometerAlt,
+  FaBars,
+  FaTimes,
 } from "react-icons/fa";
 
 const AdminDashboard = () => {
@@ -32,9 +34,8 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [loadingLeaves, setLoadingLeaves] = useState(false);
   const [search, setSearch] = useState("");
-
-  // ✅ For editing employee
   const [editEmployee, setEditEmployee] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // ✅ Sidebar toggle state
 
   const token = localStorage.getItem("token");
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
@@ -45,7 +46,7 @@ const AdminDashboard = () => {
     window.location.href = "/";
   };
 
-  // ✅ Profile
+  // ✅ Fetch Admin Profile
   const fetchProfile = async () => {
     try {
       const res = await axios.get(`${API_URL}/api/admin/profile`, {
@@ -57,7 +58,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // ✅ Employees
+  // ✅ Fetch Employees
   const fetchEmployees = async () => {
     setLoading(true);
     try {
@@ -74,7 +75,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // ✅ Leaves
+  // ✅ Fetch Leaves
   const fetchLeaves = async () => {
     setLoadingLeaves(true);
     try {
@@ -113,7 +114,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // ✅ Approve/Reject Leave
+  // ✅ Leave Approve / Reject
   const handleLeaveAction = async (id, action) => {
     try {
       await axios.put(
@@ -139,12 +140,11 @@ const AdminDashboard = () => {
     setFilteredEmployees(filtered);
   };
 
-  // ✅ Save Edited Employee
+  // ✅ Edit Employee Submit
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
       const formData = new FormData();
-
       formData.append("employeeId", editEmployee.employeeId || "");
       formData.append("name", editEmployee.name || "");
       formData.append("email", editEmployee.email || "");
@@ -173,23 +173,32 @@ const AdminDashboard = () => {
     }
   };
 
-
-
-
   return (
-
     <div className="dashboard-container">
-      {/* Sidebar */}
-      <div className="sidebar">
-        <h4 className="sidebar-title"> Admin Panel</h4>
-        <p className="profile-info"> {profile?.username || "Admin"}</p>
-        <p className="profile-info"> {profile?.company || "No Company"}</p>
+      {/* ✅ Topbar for Mobile */}
+      <div className="topbar d-flex justify-content-between align-items-center p-3 d-md-none">
+        <h5 className="m-0 fw-bold text-white">Admin Panel</h5>
+        <button
+          className="btn btn-outline-light btn-sm"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+        >
+          {sidebarOpen ? <FaTimes /> : <FaBars />}
+        </button>
+      </div>
+
+      {/* ✅ Sidebar */}
+      <div className={`sidebar ${sidebarOpen ? "show" : ""}`}>
+        <h4 className="sidebar-title">Admin Panel</h4>
+        <p className="profile-info">{profile?.username || "Admin"}</p>
+        <p className="profile-info">{profile?.company || "No Company"}</p>
 
         <ul className="nav-links">
-
           <li
-            className={`nav-item ${activeTab === "attendanceGif" ? "active" : ""}`}
-            onClick={() => setActiveTab("attendanceGif")}
+            className={activeTab === "attendanceGif" ? "active" : ""}
+            onClick={() => {
+              setActiveTab("attendanceGif");
+              setSidebarOpen(false);
+            }}
           >
             <FaTachometerAlt className="me-2" /> Dashboard
           </li>
@@ -198,47 +207,65 @@ const AdminDashboard = () => {
             onClick={() => {
               setActiveTab("employees");
               setEditEmployee(null);
+              setSidebarOpen(false);
             }}
           >
             <FaUsers className="me-2" /> Employees
           </li>
           <li
             className={activeTab === "create-employee" ? "active" : ""}
-            onClick={() => setActiveTab("create-employee")}
+            onClick={() => {
+              setActiveTab("create-employee");
+              setSidebarOpen(false);
+            }}
           >
             <FaUserPlus className="me-2" /> Add Employee
           </li>
           <li
             className={activeTab === "attendance" ? "active" : ""}
-            onClick={() => setActiveTab("attendance")}
+            onClick={() => {
+              setActiveTab("attendance");
+              setSidebarOpen(false);
+            }}
           >
-            <FaCalendarCheck className="me-2" /> Emp Attendance
+            <FaCalendarCheck className="me-2" /> Attendance
           </li>
           <li
             className={activeTab === "leaves" ? "active" : ""}
-            onClick={() => setActiveTab("leaves")}
+            onClick={() => {
+              setActiveTab("leaves");
+              setSidebarOpen(false);
+            }}
           >
             <FaClipboardList className="me-2" /> Leave Approvals
           </li>
           <li
             className={activeTab === "salary-slip" ? "active" : ""}
-            onClick={() => setActiveTab("salary-slip")}
+            onClick={() => {
+              setActiveTab("salary-slip");
+              setSidebarOpen(false);
+            }}
           >
             <FaFileInvoiceDollar className="me-2" /> Salary Slip
           </li>
           <li
             className={activeTab === "tasks" ? "active" : ""}
-            onClick={() => setActiveTab("tasks")}
+            onClick={() => {
+              setActiveTab("tasks");
+              setSidebarOpen(false);
+            }}
           >
             <FaTasks className="me-2" /> Manage Tasks
           </li>
           <li
             className={activeTab === "messages" ? "active" : ""}
-            onClick={() => setActiveTab("messages")}
+            onClick={() => {
+              setActiveTab("messages");
+              setSidebarOpen(false);
+            }}
           >
-            <FaEnvelope className="me-2" /> Admin Messages
+            <FaEnvelope className="me-2" />  Emp Messages
           </li>
-
         </ul>
 
         <button className="logout-btn" onClick={handleLogout}>
@@ -246,12 +273,11 @@ const AdminDashboard = () => {
         </button>
       </div>
 
-      {/* Main Content */}
+      {/* ✅ Main Content */}
       <div className="main-content">
-        <h2>Welcome, {profile?.username || "Admin"} </h2>
+        <h2>Welcome, {profile?.username || "Admin"}</h2>
         <h5>Company: {profile?.company || "Not Assigned"}</h5>
 
-        {/* Employees List */}
         {activeTab === "employees" && !editEmployee && (
           <>
             <div className="section-header">
@@ -271,7 +297,7 @@ const AdminDashboard = () => {
                   <thead>
                     <tr>
                       <th>Image</th>
-                      <th>EmployeeID</th>
+                      <th>ID</th>
                       <th>Name</th>
                       <th>Email</th>
                       <th>Position</th>
@@ -282,21 +308,34 @@ const AdminDashboard = () => {
                   <tbody>
                     {filteredEmployees.map((emp) => (
                       <tr key={emp._id}>
-                        <td>
+                        <td className="text-center">
                           {emp.image ? (
                             <img
-                              src={`${API_URL}${emp.image}`}
+                              src={
+                                emp.image.startsWith("http")
+                                  ? emp.image
+                                  : `${API_URL.replace(/\/$/, "")}/${emp.image.replace(/^\//, "")}`
+                              }
                               alt={emp.name}
                               style={{
-                                width: "40px",
-                                height: "40px",
+                                width: "45px",
+                                height: "45px",
                                 borderRadius: "50%",
+                                objectFit: "cover",
+                                border: "2px solid #e0e0e0",
+                                backgroundColor: "#f8f9fa",
+                                boxShadow: "0 0 5px rgba(0,0,0,0.1)",
+                              }}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "/default-avatar.png"; // fallback image (optional)
                               }}
                             />
                           ) : (
-                            "No Image"
+                            <span className="text-muted small">No Image</span>
                           )}
                         </td>
+
                         <td>{emp.employeeId}</td>
                         <td>{emp.name}</td>
                         <td>{emp.email}</td>
@@ -332,28 +371,12 @@ const AdminDashboard = () => {
           </>
         )}
 
-        {/* Edit Employee Form */}
         {activeTab === "employees" && editEmployee && (
-          <div>
-            <h3 className="mb-3" style={{ color: "#0f3460" }}>
-              Edit Employee
-            </h3>
-            <form onSubmit={handleEditSubmit} className="edit-form">
+          <div className="edit-form">
+            <h4>Edit Employee</h4>
+            <form onSubmit={handleEditSubmit}>
+              {/* Row 1 — Name & Email */}
               <div className="row">
-                <div className="col-md-6 mb-3">
-                  <label>Employee ID</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={editEmployee.employeeId || ""}
-                    onChange={(e) =>
-                      setEditEmployee({
-                        ...editEmployee,
-                        employeeId: e.target.value,
-                      })
-                    }
-                  />
-                </div>
                 <div className="col-md-6 mb-3">
                   <label>Name</label>
                   <input
@@ -368,9 +391,6 @@ const AdminDashboard = () => {
                     }
                   />
                 </div>
-              </div>
-
-              <div className="row">
                 <div className="col-md-6 mb-3">
                   <label>Email</label>
                   <input
@@ -385,6 +405,10 @@ const AdminDashboard = () => {
                     }
                   />
                 </div>
+              </div>
+
+              {/* Row 2 — Position & Salary */}
+              <div className="row">
                 <div className="col-md-6 mb-3">
                   <label>Position</label>
                   <input
@@ -399,9 +423,6 @@ const AdminDashboard = () => {
                     }
                   />
                 </div>
-              </div>
-
-              <div className="row">
                 <div className="col-md-6 mb-3">
                   <label>Salary</label>
                   <input
@@ -416,6 +437,10 @@ const AdminDashboard = () => {
                     }
                   />
                 </div>
+              </div>
+
+              {/* Row 3 — Department & Join Date */}
+              <div className="row">
                 <div className="col-md-6 mb-3">
                   <label>Department</label>
                   <input
@@ -430,9 +455,7 @@ const AdminDashboard = () => {
                     }
                   />
                 </div>
-              </div>
 
-              <div className="row">
                 <div className="col-md-6 mb-3">
                   <label>Join Date</label>
                   <input
@@ -453,6 +476,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
+              {/* Buttons */}
               <div className="form-actions mt-3">
                 <button type="submit" className="btn btn-success me-2">
                   Update
@@ -469,7 +493,13 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* Leaves */}
+
+
+        {activeTab === "create-employee" && <CreateEmployee />}
+        {activeTab === "attendance" && <EmployeeAttendance />}
+        {activeTab === "salary-slip" && <SalarySlipPage />}
+        {activeTab === "tasks" && <AdminTaskPage />}
+        {activeTab === "messages" && <AdminMessages />}
         {activeTab === "leaves" && (
           <>
             <h4>Leave Requests</h4>
@@ -501,13 +531,17 @@ const AdminDashboard = () => {
                             <>
                               <button
                                 className="btn-success"
-                                onClick={() => handleLeaveAction(leave._id, "approved")}
+                                onClick={() =>
+                                  handleLeaveAction(leave._id, "approved")
+                                }
                               >
                                 Approve
                               </button>
                               <button
                                 className="btn-danger"
-                                onClick={() => handleLeaveAction(leave._id, "rejected")}
+                                onClick={() =>
+                                  handleLeaveAction(leave._id, "rejected")
+                                }
                               >
                                 Reject
                               </button>
@@ -522,13 +556,6 @@ const AdminDashboard = () => {
             )}
           </>
         )}
-
-        {/* Other Pages */}
-        {activeTab === "create-employee" && <CreateEmployee />}
-        {activeTab === "attendance" && <EmployeeAttendance />}
-        {activeTab === "salary-slip" && <SalarySlipPage />}
-        {activeTab === "tasks" && <AdminTaskPage />}
-        {activeTab === "messages" && <AdminMessages />}
         {activeTab === "attendanceGif" && <AttendanceLeaveDashboard />}
       </div>
     </div>

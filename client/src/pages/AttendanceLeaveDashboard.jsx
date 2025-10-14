@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { Bar } from "react-chartjs-2";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,17 +12,24 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import "./AttendanceLeaveDashboard.css";
 
-// Register ChartJS components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const API_URL =
   (process.env.REACT_APP_API_URL && process.env.REACT_APP_API_URL.trim()) ||
   "http://localhost:5000/api/employee";
 
-const AttendanceDashboard = () => {
+const AttendanceLeaveDashboard = () => {
   const token = localStorage.getItem("token");
   const [attendance, setAttendance] = useState([]);
+  const [selectedRange, setSelectedRange] = useState(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // ✅ Fetch Attendance Data
   const fetchAttendance = async () => {
@@ -38,96 +47,234 @@ const AttendanceDashboard = () => {
     fetchAttendance();
   }, []);
 
-  // ---------- Attendance Graph (Day-wise) ----------
-  const attendanceCountByDay = {};
-
-  attendance.forEach((rec) => {
-    if (!rec.punchIn) return;
-    const dayKey = new Date(rec.punchIn).toLocaleDateString("en-IN", {
-      weekday: "short",
-      day: "2-digit",
-      month: "short",
+  // ✅ Get all attendance dates (for calendar highlight)
+  const attendanceDates = useMemo(() => {
+    const set = new Set();
+    attendance.forEach((rec) => {
+      if (rec.punchIn) {
+        const day = new Date(rec.punchIn).toISOString().split("T")[0];
+        set.add(day);
+      }
     });
-    attendanceCountByDay[dayKey] = 1; // Present = 1
-  });
+    return set;
+  }, [attendance]);
 
-  const attendanceLabels = Object.keys(attendanceCountByDay);
-  const attendanceValues = Object.values(attendanceCountByDay);
+  // ✅ Date helpers
+  const startOfDay = (d) => {
+    const x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    return x;
+  };
+  const endOfDay = (d) => {
+    const x = new Date(d);
+    x.setHours(23, 59, 59, 999);
+    return x;
+  };
 
-  const attendanceChartData = useMemo(
-    () => ({
-      labels: attendanceLabels,
-      datasets: [
-        {
-          label: "Present (Days)",
-          data: attendanceValues,
-          backgroundColor: attendanceValues.map((v) =>
-            v === 1 ? "rgba(40, 167, 69, 0.8)" : "rgba(220, 53, 69, 0.7)"
-          ),
-          borderRadius: 8,
-        },
-      ],
-    }),
-    [attendanceLabels, attendanceValues]
-  );
+  // ✅ Filter attendance based on selected range
+  const filteredAttendance = useMemo(() => {
+    if (!selectedRange) return attendance;
+    if (selectedRange instanceof Date) {
+      const s = startOfDay(selectedRange).getTime();
+      const e = endOfDay(selectedRange).getTime();
+      return attendance.filter((rec) => {
+        if (!rec.punchIn) return false;
+        const t = new Date(rec.punchIn).getTime();
+        return t >= s && t <= e;
+      });
+    }
+    if (Array.isArray(selectedRange) && selectedRange.length === 2) {
+      const s = startOfDay(selectedRange[0]).getTime();
+      const e = endOfDay(selectedRange[1]).getTime();
+      return attendance.filter((rec) => {
+        if (!rec.punchIn) return false;
+        const t = new Date(rec.punchIn).getTime();
+        return t >= s && t <= e;
+      });
+    }
+    return attendance;
+  }, [attendance, selectedRange]);
 
-  const attendanceOptions = {
+  // ✅ Calculate working hours (using punchIn, punchOut, current time)
+  const hoursByDay = useMemo(() => {
+    const map = {};
+
+    filteredAttendance.forEach((rec) => {
+      if (!rec.punchIn) return;
+
+      const punchIn = new Date(rec.punchIn);
+      const punchOut = rec.punchOut ? new Date(rec.punchOut) : null;
+      const dayKey = punchIn.toLocaleDateString("en-IN");
+
+      let workedHours = 0;
+      if (punchOut) {
+        workedHours = (punchOut - punchIn) / (1000 * 60 * 60);
+      } else {
+        // If no punch-out, calculate live difference from current time
+        workedHours = (currentTime - punchIn) / (1000 * 60 * 60);
+      }
+
+      map[dayKey] = (map[dayKey] || 0) + workedHours;
+    });
+
+    const sorted = Object.entries(map).sort(
+      (a, b) =>
+        new Date(a[0].split("/").reverse().join("-")) -
+        new Date(b[0].split("/").reverse().join("-"))
+    );
+
+    return {
+      labels: sorted.map((e) => e[0]),
+      values: sorted.map((e) => parseFloat(e[1].toFixed(2))),
+    };
+  }, [filteredAttendance, currentTime]);
+
+  // ✅ Chart Data
+  const chartData = {
+    labels: hoursByDay.labels,
+    datasets: [
+      {
+        label: "Working Hours (Live)",
+        data: hoursByDay.values,
+        backgroundColor: "#0f3460",
+        borderRadius: 6,
+      },
+    ],
+  };
+
+  // ✅ Chart Options
+  const chartOptions = {
     responsive: true,
     plugins: {
+      legend: { display: true, position: "bottom" },
       title: {
         display: true,
-        text: "Employee Day-wise Attendance",
-        font: { size: 18, weight: "bold" },
+        text: "Real-Time Working Hours Overview",
         color: "#0f3460",
-      },
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: (context) => {
-            const date = attendanceLabels[context.dataIndex];
-            return `${date}: ${context.raw === 1 ? "Present ✅" : "Absent ❌"}`;
-          },
-        },
+        font: { size: 16, weight: "600" },
       },
     },
     scales: {
       y: {
         beginAtZero: true,
-        min: 0,
-        max: 1,
-        ticks: { stepSize: 1, color: "#555" },
+        title: { display: true, text: "Hours", color: "#0f3460" },
       },
       x: {
-        ticks: {
-          color: "#555",
-          autoSkip: true,
-          maxRotation: 50,
-          minRotation: 30,
-        },
+        ticks: { color: "#0f3460" },
       },
     },
   };
 
-  // ✅ Render
-  return (
-    <div className="container my-4">
-      <h2 className="text-center fw-bold mb-4" style={{ color: "#0f3460" }}>
-        Employee Attendance Dashboard
-      </h2>
+  // ✅ Time formatting
+  const formattedDate = currentTime.toLocaleDateString("en-IN", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
 
-      <div className="card shadow-sm border-0">
-        <div className="card-body" style={{ height: "450px" }}>
-          {attendanceLabels.length > 0 ? (
-            <Bar data={attendanceChartData} options={attendanceOptions} />
-          ) : (
-            <p className="text-muted text-center">
-              ⚠️ No attendance data available
-            </p>
-          )}
+  const formattedTime = currentTime.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
+  // ✅ Range Filters
+  const applyToday = () => setSelectedRange(new Date());
+  const applyLast7Days = () => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 6);
+    setSelectedRange([start, end]);
+  };
+  const applyThisMonth = () => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    setSelectedRange([start, end]);
+  };
+  const clearSelection = () => setSelectedRange(null);
+
+  // ✅ Calendar tile colors
+  const tileClassName = ({ date, view }) => {
+    if (view === "month") {
+      const dayStr = date.toISOString().split("T")[0];
+      if (attendanceDates.has(dayStr)) {
+        return "tile-present";
+      } else if (date < new Date()) {
+        return "tile-absent";
+      }
+    }
+    return null;
+  };
+
+  return (
+    <div className="attendance-dashboard-container">
+      <div className="dashboard-inner">
+        {/* 🌟 Header with Live Time */}
+        <div className="dashboard-header">
+          <div>
+            <h2 className="attendance-heading">Employee Attendance Dashboard</h2>
+          </div>
+          <div className="clock-card">
+            <div className="clock-time">{formattedTime}</div>
+            <div className="clock-date">{formattedDate}</div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="row-layout">
+          <div className="chart-section">
+            <div className="preset-buttons">
+              <button className="preset-button" onClick={applyToday}>
+                Today
+              </button>
+              <button className="preset-button" onClick={applyLast7Days}>
+                Last 7 Days
+              </button>
+              <button className="preset-button" onClick={applyThisMonth}>
+                This Month
+              </button>
+              <button className="preset-button clear" onClick={clearSelection}>
+                Clear
+              </button>
+            </div>
+
+            <div className="attendance-card">
+              <div className="chart-box">
+                <Bar data={chartData} options={chartOptions} />
+              </div>
+            </div>
+          </div>
+
+          {/* Calendar */}
+          <div className="calendar-section">
+            <div className="calendar-card">
+              <h4 className="calendar-title">Attendance Calendar</h4>
+              <Calendar
+                onChange={setSelectedRange}
+                value={selectedRange}
+                selectRange={true}
+                locale="en-IN"
+                tileClassName={tileClassName}
+              />
+              <div className="calendar-legend">
+                <span className="legend-item">
+                  <span className="legend-color present"></span> Present
+                </span>
+                <span className="legend-item">
+                  <span className="legend-color absent"></span> Absent
+                </span>
+                <span className="legend-item">
+                  <span className="legend-color future"></span> Future
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default AttendanceDashboard;
+export default AttendanceLeaveDashboard;

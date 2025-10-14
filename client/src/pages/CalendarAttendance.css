@@ -1,0 +1,177 @@
+:root {
+  --theme-color: #0f3460;
+  --absent-color: rgba(220, 53, 69, 0.7);
+  --bg-glass: rgba(255, 255, 255, 0.85);
+  --shadow-light: rgba(15, 52, 96, 0.1);
+  --shadow-strong: rgba(15, 52, 96, 0.25);
+}
+
+/* ✅ Filter Buttons */
+.active-btn {
+  background-color: var(--theme-color) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 8px var(--shadow-light);
+  transition: all 0.3s ease;
+}
+
+.inactive-btn {
+  background-color: white;
+  color: var(--theme-color);
+  border: 1px solid var(--theme-color);
+  transition: all 0.3s ease;
+}
+
+.inactive-btn:hover {
+  background-color: var(--theme-color);
+  color: white;
+  box-shadow: 0 2px 10px var(--shadow-strong);
+}
+
+/* ✅ Calendar Container */
+.small-calendar {
+  background: var(--bg-glass);
+  border-radius: 18px;
+  padding: 12px 14px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 18px rgba(15, 52, 96, 0.15);
+  transition: all 0.3s ease;
+}
+
+.small-calendar:hover {
+  box-shadow: 0 10px 25px rgba(15, 52, 96, 0.25);
+}
+
+/* ✅ Calendar Grid Layout */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin: 0 auto;
+  max-width: 320px;
+  transition: all 0.3s ease;
+}
+
+/* ✅ Header Days */
+.calendar-header {
+  text-align: center;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--theme-color);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* ✅ Individual Day Cells */
+.calendar-day {
+  height: 46px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  position: relative;
+  transition: all 0.25s ease-in-out;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(15, 52, 96, 0.08);
+  cursor: pointer;
+}
+
+/* ✅ Present & Absent */
+.calendar-day.present-day {
+  background-color: var(--theme-color);
+  color: white;
+  box-shadow: 0 3px 10px var(--shadow-strong);
+}
+
+.calendar-day.absent-day {
+  background-color: var(--absent-color);
+  color: white;
+  box-shadow: 0 3px 10px rgba(220, 53, 69, 0.4);
+}
+
+.calendar-day.empty {
+  background-color: transparent;
+  border: none;
+  cursor: default;
+}
+
+/* ✅ Hover Effect */
+.calendar-day:hover:not(.empty) {
+  transform: scale(1.07);
+  box-shadow: 0 4px 12px var(--shadow-strong);
+}
+
+/* ✅ Today's Highlight */
+.calendar-day.today {
+  border: 2px solid var(--theme-color);
+  box-shadow: 0 0 12px rgba(15, 52, 96, 0.4);
+  background: linear-gradient(
+    145deg,
+    rgba(15, 52, 96, 0.1),
+    rgba(255, 255, 255, 0.6)
+  );
+  color: var(--theme-color);
+  font-weight: 800;
+}
+
+/* ✅ Date Number */
+.date-number {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+/* ✅ Legend */
+.legend {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.legend.present {
+  background-color: var(--theme-color);
+}
+
+.legend.absent {
+  background-color: var(--absent-color);
+}
+
+/* ✅ Navigation Buttons */
+.nav-btn {
+  background-color: var(--theme-color);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  padding: 4px 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px var(--shadow-light);
+}
+
+.nav-btn:hover {
+  transform: scale(1.1);
+  background-color: #142850;
+  box-shadow: 0 3px 10px var(--shadow-strong);
+}
+
+/* ✅ Responsive Design */
+@media (max-width: 768px) {
+  .calendar-day {
+    height: 40px;
+    font-size: 11px;
+    border-radius: 8px;
+  }
+  .calendar-header {
+    font-size: 10px;
+  }
+  .small-calendar {
+    padding: 10px;
+  }
+}
